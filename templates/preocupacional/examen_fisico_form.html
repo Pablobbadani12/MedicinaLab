@@ -1,0 +1,1176 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Examen Clínico — {{ turno.paciente }} — MedicinaLab{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Cabecera ───────────────────────────────────────────── */
+.exam-header {
+    background: linear-gradient(135deg, var(--brand-800, #065f46), var(--brand-600, #059669));
+    color: #fff;
+    border-radius: var(--radius-lg, 0.75rem);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(4,120,87,0.25);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.exam-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+.exam-avatar {
+    width: 54px; height: 54px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.75rem; flex-shrink: 0;
+}
+.exam-header h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.35rem; font-weight: 700; margin: 0 0 .2rem 0;
+}
+.exam-header p { font-size: .88rem; opacity: .9; margin: 0; }
+.exam-btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.15rem;
+    background: #ffffff;
+    color: var(--brand-800, #9a3412);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    transition: all 0.2s ease;
+}
+.exam-btn-back:hover {
+    background: #fff5f2;
+    color: var(--brand-900, #7c2d12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+/* ── Secciones clínicas ─────────────────────────────────── */
+.exam-section {
+    background: #fff;
+    border-radius: var(--radius-lg, 0.75rem);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+.exam-section-header {
+    background: #f8fafc;
+    border-bottom: 1.5px solid #e2e8f0;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.exam-section-title {
+    font-size: .8rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: #0f766e; margin: 0;
+    display: flex; align-items: center; gap: .5rem;
+}
+.exam-section-body {
+    padding: 1.25rem;
+}
+
+/* ── Checkboxes y Toggles ───────────────────────────────── */
+.checks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .75rem 1rem;
+    align-items: center;
+}
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .88rem;
+    color: var(--text-primary, #1f2937);
+    cursor: pointer;
+    user-select: none;
+}
+.check-item input[type="checkbox"] {
+    width: 1.15rem; height: 1.15rem;
+    accent-color: var(--brand-600, #059669);
+    cursor: pointer;
+    border-radius: .25rem;
+}
+.obs-row {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+.obs-row label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.obs-row input[type="text"], .obs-row input[type="search"] {
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: .5rem;
+    font-size: .88rem;
+    outline: none;
+    transition: border-color .15s;
+}
+.obs-row input:focus {
+    border-color: var(--brand-500, #10b981);
+    box-shadow: 0 0 0 3px rgba(16,185,129,.12);
+}
+
+/* ── Visual Grid ────────────────────────────────────────── */
+.visual-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: .75rem;
+}
+.visual-grid .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+.visual-grid label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+.visual-grid input {
+    padding: .45rem .65rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: .5rem;
+    font-size: .88rem;
+    outline: none;
+}
+.visual-grid input:focus {
+    border-color: var(--brand-500, #10b981);
+}
+
+/* ── Datos Iniciales ────────────────────────────────────── */
+.datos-iniciales-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem 1.25rem;
+}
+.datos-iniciales-grid .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+.datos-iniciales-grid label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.datos-iniciales-grid input {
+    width: 100%;
+    padding: .55rem .75rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: .5rem;
+    font-size: .9rem;
+    outline: none;
+    transition: all .15s ease;
+    background: #ffffff;
+}
+.datos-iniciales-grid input:focus {
+    border-color: var(--brand-600, #059669);
+    box-shadow: 0 0 0 3px rgba(5,150,105,.15);
+}
+
+/* ── ODONTOGRAMA ESTILOS ───────────────────────────────── */
+.odonto-container {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: .75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+.odonto-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1.5px dashed #cbd5e1;
+    margin-bottom: 1.5rem;
+}
+.tool-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+}
+.tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .45rem .85rem;
+    border-radius: 2rem;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #475569;
+    transition: all .15s ease;
+    user-select: none;
+}
+.tool-btn:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+.tool-btn.active {
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.tool-btn[data-tool="caries"].active {
+    background: #ef4444; border-color: #dc2626;
+}
+.tool-btn[data-tool="obturado"].active {
+    background: #3b82f6; border-color: #2563eb;
+}
+.tool-btn[data-tool="ausente"].active {
+    background: #475569; border-color: #334155;
+}
+.tool-btn[data-tool="corona"].active {
+    background: #f59e0b; border-color: #d97706;
+}
+.tool-btn[data-tool="sano"].active {
+    background: #64748b; border-color: #475569;
+}
+
+.odonto-actions {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+.action-preset-btn {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1.5px solid #a7f3d0;
+    border-radius: .5rem;
+    padding: .45rem .85rem;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    transition: all .15s;
+}
+.action-preset-btn:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+}
+.action-clear-btn {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1.5px solid #e2e8f0;
+    border-radius: .5rem;
+    padding: .45rem .85rem;
+    font-size: .82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+}
+.action-clear-btn:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+/* Odontograma FDI Layout */
+.fdi-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: .5rem 0;
+}
+.fdi-arch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+}
+.fdi-quadrant {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+}
+.fdi-v-divider {
+    width: 3px;
+    background: #0f766e;
+    height: 70px;
+    border-radius: 2px;
+}
+.fdi-h-divider {
+    width: 96%;
+    height: 3px;
+    background: #0f766e;
+    margin: 6px 0;
+    border-radius: 2px;
+}
+
+/* Individual Tooth Card */
+.tooth-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    user-select: none;
+}
+.tooth-num {
+    font-size: .76rem;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all .15s;
+}
+.tooth-num:hover {
+    background: #e2e8f0;
+    color: #0f766e;
+}
+.tooth-svg-wrap {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+}
+.tooth-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.tooth-surface {
+    fill: #ffffff;
+    stroke: #475569;
+    stroke-width: 1.2;
+    transition: fill .15s ease, stroke .15s;
+    cursor: pointer;
+}
+.tooth-surface:hover {
+    filter: brightness(0.92);
+}
+.tooth-surface.caries {
+    fill: #ef4444 !important;
+}
+.tooth-surface.obturado {
+    fill: #3b82f6 !important;
+}
+
+/* Overlay Tooth Status */
+.tooth-overlay-ausente {
+    display: none;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+}
+.tooth-card.is-ausente .tooth-overlay-ausente {
+    display: block;
+}
+.tooth-card.is-ausente .tooth-surface {
+    fill: #f1f5f9 !important;
+    opacity: 0.6;
+}
+.tooth-card.is-corona .tooth-svg-wrap {
+    outline: 3px solid #f59e0b;
+    outline-offset: 2px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+/* Legend & Badges */
+.odonto-footer-info {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: .82rem;
+    color: #64748b;
+}
+.odonto-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-weight: 500;
+}
+.legend-color {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.15);
+}
+.summary-badges {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+}
+.badge-count {
+    padding: .25rem .55rem;
+    border-radius: 1rem;
+    font-size: .75rem;
+    font-weight: 700;
+}
+.badge-caries { background: #fee2e2; color: #991b1b; }
+.badge-obturado { background: #dbeafe; color: #1e40af; }
+.badge-ausente { background: #f1f5f9; color: #334155; }
+.badge-corona { background: #fef3c7; color: #92400e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="exam-header">
+    <div class="exam-header-left">
+        <div class="exam-avatar">🩺</div>
+        <div>
+            <h1>Examen Clínico Físico</h1>
+            <p>
+                Paciente: <strong>{{ turno.paciente.apellido }}, {{ turno.paciente.nombres }}</strong> (DNI: {{ turno.paciente.dni }})
+                {% if turno.paciente.empresa %} | Empresa: <strong>{{ turno.paciente.empresa.nombre }}</strong>{% endif %}
+                | Turno: <strong>{{ turno.fecha_visita|date:"d/m/Y" }}</strong>
+            </p>
+        </div>
+    </div>
+    <div>
+        <a href="{% url 'preocupacional:examen_fisico_list' %}" class="exam-btn-back">
+            ← Volver al listado
+        </a>
+    </div>
+</div>
+
+<form method="post" id="examen-clinico-form">
+    {% csrf_token %}
+    {{ form.odonto_data }}
+
+    <!-- DATOS INICIALES -->
+    <div class="exam-section" style="border-left: 4px solid var(--brand-600, #059669);">
+        <div class="exam-section-header" style="background: #f0fdf4;">
+            <h3 class="exam-section-title" style="color: #166534;">
+                📋 Datos iniciales
+            </h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="datos-iniciales-grid">
+                <div class="form-group">
+                    <label for="id_peso">A. Peso (Kg)</label>
+                    {{ form.peso }}
+                </div>
+                <div class="form-group">
+                    <label for="id_talla">B. Talla (Cm.)</label>
+                    {{ form.talla }}
+                </div>
+                <div class="form-group">
+                    <label for="id_tension_arterial">C. Tensión Arterial (TA)</label>
+                    {{ form.tension_arterial }}
+                </div>
+                <div class="form-group">
+                    <label for="id_sat_oxigeno">D. Saturación de Oxígeno (Sat.O2)</label>
+                    {{ form.sat_oxigeno }}
+                </div>
+                <div class="form-group">
+                    <label for="id_frecuencia_cardiaca">E. Frecuencia Cardíaca (Latidos)</label>
+                    {{ form.frecuencia_cardiaca }}
+                </div>
+                <div class="form-group">
+                    <label for="id_imc">F. Índice de masa corporal (IMC)</label>
+                    {{ form.imc }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. PIEL -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">🧴 1. Piel</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.piel_normal }} <strong>Normal</strong></label>
+                <label class="check-item">{{ form.piel_cicatrices }} Cicatrices</label>
+                <label class="check-item">{{ form.piel_lesiones }} Lesiones</label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones de Piel:</label>
+                {{ form.piel_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. TCS -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">🩹 2. Tejido Celular Subcutáneo (TCS)</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.tcs_normal }} <strong>Normal</strong></label>
+                <label class="check-item">{{ form.tcs_adenopatias }} Adenopatías</label>
+                <label class="check-item">{{ form.tcs_edemas }} Edemas</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CABEZA Y CUELLO -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">👤 3. Cabeza y Cuello</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.cabeza_normal }} <strong>Normal</strong></label>
+                <label class="check-item">{{ form.cabeza_caries }} Caries</label>
+                <label class="check-item">{{ form.cabeza_faringitis }} Faringitis</label>
+                <label class="check-item">{{ form.cabeza_tiroides }} Tiroides Palpables</label>
+                <label class="check-item">{{ form.cabeza_edemas }} Edemas</label>
+                <label class="check-item">{{ form.cabeza_adenopatias }} Adenopatías</label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones Cabeza y Cuello:</label>
+                {{ form.cabeza_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. OSTEOARTICULAR -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">🦴 4. Osteoarticular</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.osteo_normal }} <strong>Normal</strong></label>
+                <label class="check-item">{{ form.osteo_desviaciones }} Desviaciones de columna</label>
+                <label class="check-item">{{ form.osteo_manos }} Manos - Deformidades</label>
+                <label class="check-item">{{ form.osteo_pie_plano }} Pie plano</label>
+                <label class="check-item">{{ form.osteo_varices }} Várices</label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones Osteoarticular:</label>
+                {{ form.osteo_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. AGUDEZA VISUAL -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">👁️ 5. Agudeza Visual</h3>
+        </div>
+        <div class="exam-section-body">
+            <div style="margin-bottom: 1rem;">
+                <label class="check-item">{{ form.visual_anteojos }} <strong>Usa anteojos</strong></label>
+            </div>
+            <div class="visual-grid">
+                <div class="form-group">
+                    <label>Visión Cromática</label>
+                    {{ form.visual_cromatica }}
+                </div>
+                <div class="form-group">
+                    <label>OD s/c</label>
+                    {{ form.visual_od_sc }}
+                </div>
+                <div class="form-group">
+                    <label>OI s/c</label>
+                    {{ form.visual_oi_sc }}
+                </div>
+                <div class="form-group">
+                    <label>OD c/c</label>
+                    {{ form.visual_od_cc }}
+                </div>
+                <div class="form-group">
+                    <label>OI c/c</label>
+                    {{ form.visual_oi_cc }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. EXAMEN NEUROLÓGICO -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">🧠 6. Examen Neurológico</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.neuro_normal }} <strong>Normal</strong></label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones Neurológicas:</label>
+                {{ form.neuro_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. CARDIOVASCULAR -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">❤️ 7. Aparato Cardiovascular</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.cardio_pulso }} <strong>Pulso x min. rítmico</strong></label>
+                <label class="check-item">{{ form.cardio_ruidos }} <strong>Ruidos normales</strong></label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones Cardiovascular:</label>
+                {{ form.cardio_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. RESPIRATORIO -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">🫁 8. Aparato Respiratorio</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.resp_normal }} <strong>Auscultación normal</strong></label>
+                <label class="check-item">{{ form.resp_sibilancias }} Sibilancias</label>
+                <label class="check-item">{{ form.resp_rales }} Rales</label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones Respiratorio:</label>
+                {{ form.resp_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. ABDOMEN -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">🩺 9. Abdomen</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.abd_normal }} <strong>Normal</strong></label>
+                <label class="check-item">{{ form.abd_palpacion }} Palpación dolorosa</label>
+                <label class="check-item">{{ form.abd_hepatomegalia }} Hepatomegalia</label>
+                <label class="check-item">{{ form.abd_puno }} Puño percusión (+)</label>
+                <label class="check-item">{{ form.abd_hernia_umb }} Hernia umbilical</label>
+                <label class="check-item">{{ form.abd_hernia_ing }} Hernia inguinal</label>
+                <label class="check-item">{{ form.abd_anillos_dil }} Anillos inguinales dilatados</label>
+                <label class="check-item">{{ form.abd_anillo_der }} Anillo Derecho</label>
+                <label class="check-item">{{ form.abd_anillo_izq }} Anillo Izquierdo</label>
+            </div>
+            <div class="obs-row">
+                <label>Observaciones Abdomen:</label>
+                {{ form.abd_observaciones }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. INMUNIZACIONES -->
+    <div class="exam-section">
+        <div class="exam-section-header">
+            <h3 class="exam-section-title">💉 10. Inmunizaciones</h3>
+        </div>
+        <div class="exam-section-body">
+            <div class="checks-grid">
+                <label class="check-item">{{ form.inmuno_antitetanica }} Antitetánica</label>
+                <label class="check-item">{{ form.inmuno_antigripal }} Antigripal</label>
+            </div>
+            <div class="obs-row">
+                <label>Otras vacunas. ¿Cuáles?:</label>
+                {{ form.inmuno_otras }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- 11. ODONTOGRAMA (FDI 32 PIEZAS DENTALES)                   -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="exam-section">
+        <div class="exam-section-header" style="background: #f0fdf4; border-bottom-color: #bbf7d0;">
+            <h3 class="exam-section-title" style="color: #166534; font-size: .9rem;">
+                🦷 11. Odontograma Clínico (Sistema Dígito-Dos FDI)
+            </h3>
+            <span style="font-size: .8rem; color: #166534; font-weight: 500;">
+                Haga clic en una cara dental o en el número para marcar patologías
+            </span>
+        </div>
+        <div class="exam-section-body">
+            
+            <div class="odonto-container">
+                <!-- Barra de Herramientas -->
+                <div class="odonto-toolbar">
+                    <div class="tool-selector">
+                        <span style="font-size: .8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Herramienta:</span>
+                        <button type="button" class="tool-btn active" data-tool="caries">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ef4444;"></span>
+                            Caries
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="obturado">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#3b82f6;"></span>
+                            Obturado / Arreglo
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="ausente">
+                            <span style="font-weight:900; color:#475569;">✕</span>
+                            Pieza Ausente
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="corona">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b;"></span>
+                            Corona / Prótesis
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="sano">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#cbd5e1;"></span>
+                            Borrar / Sano
+                        </button>
+                    </div>
+
+                    <div class="odonto-actions">
+                        <button type="button" class="action-preset-btn" id="btn-preset-sano" title="Marca dentadura completa en buen estado">
+                            ✨ Toda la boca en buen estado
+                        </button>
+                        <button type="button" class="action-clear-btn" id="btn-clear-odonto" title="Quitar todas las marcas">
+                            🔄 Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grilla Odontograma FDI -->
+                <div class="fdi-board">
+                    <!-- Arcada Superior (Cuadrante 1 y Cuadrante 2) -->
+                    <div class="fdi-arch" id="arch-upper">
+                        <!-- Cuadrante 1: 18 a 11 -->
+                        <div class="fdi-quadrant" id="quadrant-1">
+                            <!-- Inyectado por JS -->
+                        </div>
+                        <!-- Cruz vertical -->
+                        <div class="fdi-v-divider"></div>
+                        <!-- Cuadrante 2: 21 a 28 -->
+                        <div class="fdi-quadrant" id="quadrant-2">
+                            <!-- Inyectado por JS -->
+                        </div>
+                    </div>
+
+                    <!-- Cruz horizontal -->
+                    <div class="fdi-h-divider"></div>
+
+                    <!-- Arcada Inferior (Cuadrante 4 y Cuadrante 3) -->
+                    <div class="fdi-arch" id="arch-lower">
+                        <!-- Cuadrante 4: 48 a 41 -->
+                        <div class="fdi-quadrant" id="quadrant-4">
+                            <!-- Inyectado por JS -->
+                        </div>
+                        <!-- Cruz vertical -->
+                        <div class="fdi-v-divider"></div>
+                        <!-- Cuadrante 3: 31 a 38 -->
+                        <div class="fdi-quadrant" id="quadrant-3">
+                            <!-- Inyectado por JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen y Leyenda -->
+                <div class="odonto-footer-info">
+                    <div class="odonto-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#ef4444;"></span> Caries (Rojo)
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#3b82f6;"></span> Obturado (Azul)
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#f1f5f9; position:relative; overflow:hidden;">
+                                <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; color:#475569;">✕</span>
+                            </span> Ausente (Cruz)
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#fef3c7; border-color:#f59e0b;"></span> Corona (Borde Ámbar)
+                        </div>
+                    </div>
+
+                    <div class="summary-badges" id="summary-badges">
+                        <span class="badge-count badge-caries" id="cnt-caries">Caries: 0</span>
+                        <span class="badge-count badge-obturado" id="cnt-obturado">Obturados: 0</span>
+                        <span class="badge-count badge-ausente" id="cnt-ausente">Ausentes: 0</span>
+                        <span class="badge-count badge-corona" id="cnt-corona">Coronas: 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campos de texto debajo del Odontograma (idéntico a la ficha física) -->
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div class="obs-row">
+                    <label style="font-weight: 700; color: #1f2937;">Observaciones Odontograma:</label>
+                    {{ form.odonto_observaciones }}
+                </div>
+                <div class="obs-row">
+                    <label style="font-weight: 700; color: #1f2937;">Conclusión:</label>
+                    {{ form.conclusion }}
+                </div>
+                <div style="font-size: .8rem; color: #64748b; font-style: italic; border-top: 1px dashed #e2e8f0; padding-top: .75rem;">
+                    Declaro que la información suministrada es completa y verídica. La falta de cooperación será suficiente para suspender el examen.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div style="margin-top: 2rem; margin-bottom: 3rem; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1.5px solid #e5e7eb; padding-top: 1.5rem;">
+        <a href="{% url 'preocupacional:examen_fisico_list' %}" style="padding: 0.75rem 1.75rem; text-decoration: none; border: 1.5px solid #d1d5db; border-radius: 0.5rem; color: #374151; font-weight: 600; background: #fff;">
+            Cancelar
+        </a>
+        <button type="submit" style="padding: 0.75rem 2rem; background: var(--brand-600, #059669); color: white; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">
+            💾 Guardar Examen Clínico
+        </button>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ── CONFIGURACIÓN DE PIEZAS DENTALES (FDI) ─────────────────────
+    const QUADRANTS = {
+        'quadrant-1': [18, 17, 16, 15, 14, 13, 12, 11],
+        'quadrant-2': [21, 22, 23, 24, 25, 26, 27, 28],
+        'quadrant-4': [48, 47, 46, 45, 44, 43, 42, 41],
+        'quadrant-3': [31, 32, 33, 34, 35, 36, 37, 38]
+    };
+
+    const isUpper = (num) => (num >= 11 && num <= 28);
+
+    // Estado en memoria del Odontograma
+    let odontoState = {};
+
+    const hiddenInput = document.getElementById('id_odonto_data');
+    if (hiddenInput && hiddenInput.value) {
+        try {
+            odontoState = JSON.parse(hiddenInput.value);
+            if (typeof odontoState !== 'object' || odontoState === null) {
+                odontoState = {};
+            }
+        } catch(e) {
+            odontoState = {};
+        }
+    }
+
+    // Herramienta seleccionada actualmente
+    let currentTool = 'caries';
+
+    // Manejo de botones de herramientas
+    const toolBtns = document.querySelectorAll('.tool-btn');
+    toolBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            toolBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentTool = this.getAttribute('data-tool');
+        });
+    });
+
+    // Función constructora de SVG por cada pieza
+    function createToothElement(toothNum) {
+        const card = document.createElement('div');
+        card.className = 'tooth-card';
+        card.id = 'tooth-card-' + toothNum;
+        card.dataset.num = toothNum;
+
+        const upper = isUpper(toothNum);
+
+        // Número arriba para superiores, abajo para inferiores
+        const numElem = document.createElement('div');
+        numElem.className = 'tooth-num';
+        numElem.textContent = toothNum;
+        numElem.title = `Pieza ${toothNum} (Clic para cambiar estado general)`;
+        numElem.addEventListener('click', () => handleToothNumberClick(toothNum));
+
+        const wrap = document.createElement('div');
+        wrap.className = 'tooth-svg-wrap';
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 36 36');
+        svg.setAttribute('class', 'tooth-svg');
+
+        // Caras: T (Top), R (Right), B (Bottom), L (Left), C (Center)
+        const surfaces = [
+            { id: 'T', points: '0,0 36,0 26,10 10,10', title: 'Superior' },
+            { id: 'R', points: '36,0 36,36 26,26 26,10', title: 'Derecha' },
+            { id: 'B', points: '36,36 0,36 10,26 26,26', title: 'Inferior' },
+            { id: 'L', points: '0,36 0,0 10,10 10,26', title: 'Izquierda' },
+            { id: 'C', points: '10,10 26,10 26,26 10,26', title: 'Centro (Oclusal)' }
+        ];
+
+        surfaces.forEach(s => {
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', s.points);
+            poly.setAttribute('class', 'tooth-surface');
+            poly.dataset.surface = s.id;
+            poly.dataset.num = toothNum;
+            poly.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleSurfaceClick(toothNum, s.id);
+            });
+            svg.appendChild(poly);
+        });
+
+        // Overlay Cruz Ausente
+        const overlayAusente = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        overlayAusente.setAttribute('viewBox', '0 0 36 36');
+        overlayAusente.setAttribute('class', 'tooth-overlay-ausente');
+        overlayAusente.innerHTML = `
+            <line x1="2" y1="2" x2="34" y2="34" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>
+            <line x1="34" y1="2" x2="2" y2="34" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>
+        `;
+
+        wrap.appendChild(svg);
+        wrap.appendChild(overlayAusente);
+
+        // Click en el wrap si la herramienta es ausente o corona
+        wrap.addEventListener('click', () => {
+            if (currentTool === 'ausente' || currentTool === 'corona' || currentTool === 'sano') {
+                handleToothNumberClick(toothNum);
+            }
+        });
+
+        if (upper) {
+            card.appendChild(numElem);
+            card.appendChild(wrap);
+        } else {
+            card.appendChild(wrap);
+            card.appendChild(numElem);
+        }
+
+        return card;
+    }
+
+    // Renderizar los 4 cuadrantes
+    Object.keys(QUADRANTS).forEach(quadId => {
+        const container = document.getElementById(quadId);
+        if (container) {
+            container.innerHTML = '';
+            QUADRANTS[quadId].forEach(toothNum => {
+                container.appendChild(createToothElement(toothNum));
+            });
+        }
+    });
+
+    // ── INTERACCIÓN Y MANEJO DE HERRAMIENTAS ─────────────────────
+    function handleSurfaceClick(toothNum, surfaceId) {
+        toothNum = String(toothNum);
+        if (!odontoState[toothNum]) {
+            odontoState[toothNum] = {};
+        }
+
+        if (currentTool === 'ausente') {
+            toggleToothStatus(toothNum, 'ausente');
+            return;
+        }
+        if (currentTool === 'corona') {
+            toggleToothStatus(toothNum, 'corona');
+            return;
+        }
+
+        if (currentTool === 'sano') {
+            delete odontoState[toothNum][surfaceId];
+            if (Object.keys(odontoState[toothNum]).length === 0) {
+                delete odontoState[toothNum];
+            }
+        } else {
+            if (odontoState[toothNum][surfaceId] === currentTool) {
+                delete odontoState[toothNum][surfaceId];
+            } else {
+                odontoState[toothNum][surfaceId] = currentTool;
+            }
+        }
+
+        syncState();
+    }
+
+    function handleToothNumberClick(toothNum) {
+        toothNum = String(toothNum);
+        if (!odontoState[toothNum]) {
+            odontoState[toothNum] = {};
+        }
+
+        if (currentTool === 'ausente') {
+            toggleToothStatus(toothNum, 'ausente');
+        } else if (currentTool === 'corona') {
+            toggleToothStatus(toothNum, 'corona');
+        } else if (currentTool === 'sano') {
+            delete odontoState[toothNum];
+            syncState();
+        } else {
+            handleSurfaceClick(toothNum, 'C');
+        }
+    }
+
+    function toggleToothStatus(toothNum, statusName) {
+        toothNum = String(toothNum);
+        if (!odontoState[toothNum]) {
+            odontoState[toothNum] = {};
+        }
+        if (odontoState[toothNum].status === statusName) {
+            delete odontoState[toothNum].status;
+        } else {
+            odontoState[toothNum].status = statusName;
+        }
+        syncState();
+    }
+
+    // Sincronizar el DOM visual y el hidden input a partir de `odontoState`
+    function syncState() {
+        let cariesCount = 0;
+        let obturadoCount = 0;
+        let ausenteCount = 0;
+        let coronaCount = 0;
+
+        const allNums = [
+            ...QUADRANTS['quadrant-1'], ...QUADRANTS['quadrant-2'],
+            ...QUADRANTS['quadrant-4'], ...QUADRANTS['quadrant-3']
+        ];
+
+        allNums.forEach(num => {
+            const strNum = String(num);
+            const card = document.getElementById('tooth-card-' + strNum);
+            if (!card) return;
+
+            const tData = odontoState[strNum] || {};
+
+            if (tData.status === 'ausente') {
+                card.classList.add('is-ausente');
+                ausenteCount++;
+            } else {
+                card.classList.remove('is-ausente');
+            }
+
+            if (tData.status === 'corona') {
+                card.classList.add('is-corona');
+                coronaCount++;
+            } else {
+                card.classList.remove('is-corona');
+            }
+
+            const surfaces = card.querySelectorAll('.tooth-surface');
+            surfaces.forEach(s => {
+                const sId = s.dataset.surface;
+                s.classList.remove('caries', 'obturado');
+                const sState = tData[sId];
+                if (sState === 'caries') {
+                    s.classList.add('caries');
+                    cariesCount++;
+                } else if (sState === 'obturado') {
+                    s.classList.add('obturado');
+                    obturadoCount++;
+                }
+            });
+        });
+
+        const elCaries = document.getElementById('cnt-caries');
+        const elObturado = document.getElementById('cnt-obturado');
+        const elAusente = document.getElementById('cnt-ausente');
+        const elCorona = document.getElementById('cnt-corona');
+
+        if (elCaries) elCaries.textContent = `Caries: ${cariesCount}`;
+        if (elObturado) elObturado.textContent = `Obturados: ${obturadoCount}`;
+        if (elAusente) elAusente.textContent = `Ausentes: ${ausenteCount}`;
+        if (elCorona) elCorona.textContent = `Coronas: ${coronaCount}`;
+
+        if (hiddenInput) {
+            hiddenInput.value = JSON.stringify(odontoState);
+        }
+    }
+
+    // Botones de acción rápida
+    const btnPresetSano = document.getElementById('btn-preset-sano');
+    if (btnPresetSano) {
+        btnPresetSano.addEventListener('click', function() {
+            odontoState = {};
+            syncState();
+
+            const obsInput = document.getElementById('id_odonto_observaciones');
+            const concInput = document.getElementById('id_conclusion');
+
+            if (obsInput) obsInput.value = "NO CARIES BUEN ESTADO BUCODENTAL.";
+            if (concInput) concInput.value = "BUEN ESTADO BUCODENTAL.";
+
+            const prevText = btnPresetSano.innerHTML;
+            btnPresetSano.innerHTML = "✔ ¡Aplicado!";
+            btnPresetSano.style.background = "#bbf7d0";
+            setTimeout(() => {
+                btnPresetSano.innerHTML = prevText;
+                btnPresetSano.style.background = "";
+            }, 1200);
+        });
+    }
+
+    const btnClearOdonto = document.getElementById('btn-clear-odonto');
+    if (btnClearOdonto) {
+        btnClearOdonto.addEventListener('click', function() {
+            if (confirm('¿Desea limpiar todas las marcas del odontograma?')) {
+                odontoState = {};
+                syncState();
+            }
+        });
+    }
+
+    // Auto-cálculo de IMC según Peso y Talla
+    const inputPeso = document.getElementById('id_peso');
+    const inputTalla = document.getElementById('id_talla');
+    const inputImc = document.getElementById('id_imc');
+
+    function calcularImc() {
+        if (!inputPeso || !inputTalla || !inputImc) return;
+        const rawPeso = inputPeso.value.replace(',', '.').trim();
+        const rawTalla = inputTalla.value.replace(',', '.').trim();
+
+        const peso = parseFloat(rawPeso);
+        const talla = parseFloat(rawTalla);
+
+        if (!isNaN(peso) && peso > 0 && !isNaN(talla) && talla > 0) {
+            // Talla ingresada en cm (ej: 175) o en m (ej: 1.75)
+            const tallaM = talla > 3 ? talla / 100 : talla;
+            if (tallaM > 0) {
+                const imcCalculado = (peso / (tallaM * tallaM)).toFixed(1);
+                inputImc.value = imcCalculado;
+            }
+        }
+    }
+
+    if (inputPeso && inputTalla) {
+        inputPeso.addEventListener('input', calcularImc);
+        inputTalla.addEventListener('input', calcularImc);
+    }
+
+    // Sincronización inicial
+    syncState();
+});
+</script>
+{% endblock %}

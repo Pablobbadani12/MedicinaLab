@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Reserva de Turnos - MedicinaLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h1 class="page-title">Reserva de Turnos</h1>
+        <p class="page-subtitle">Turnos pedidos (Pendientes y Presentes). Hacé clic en <strong>Nuevo Informe</strong> para generar el informe clínico de cada turno.</p>
+    </div>
+</div>
+
+<div class="card card-table">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID Turno</th>
+                <th>Paciente</th>
+                <th>Profesional</th>
+                <th>Fecha y Hora</th>
+                <th>Estado</th>
+                <th>Informe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for turno in turnos %}
+            <tr>
+                <td class="font-bold turno-id-cell">
+                    <span class="turno-id-badge">#{{ turno.id }}</span>
+                </td>
+                <td>
+                    <div class="user-cell">
+                        <span class="user-initials">{{ turno.paciente.apellido|slice:":1" }}{{ turno.paciente.nombres|slice:":1" }}</span>
+                        <div>
+                            <div class="user-fullname">{{ turno.paciente.apellido }}, {{ turno.paciente.nombres }}</div>
+                            <div class="user-subtext">DNI: {{ turno.paciente.dni }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="prof-name">{{ turno.profesional }}</div>
+                    <div class="prof-sub">M.N. {{ turno.profesional.matricula }}</div>
+                </td>
+                <td>
+                    <div class="fecha-cell">
+                        <span class="fecha-date">📅 {{ turno.fecha_visita|date:"d/m/Y" }}</span>
+                        <span class="fecha-time">🕐 {{ turno.hora_visita|time:"H:i" }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge estado-{{ turno.estado|lower }}">{{ turno.get_estado_display }}</span>
+                </td>
+                <td>
+                    {% if turno.informes.exists %}
+                        <div class="btn-actions-group">
+                            {% for inf in turno.informes.all %}
+                            <a href="{% url 'informes:informe_detail' inf.pk %}"
+                               class="btn-action btn-action-view"
+                               title="Ver Informe #{{ inf.id }}">
+                                📋 #{{ inf.id }}
+                            </a>
+                            {% endfor %}
+                            <a href="{% url 'informes:informe_create' %}?turno_id={{ turno.id }}"
+                               class="btn-nuevo-informe btn-nuevo-mas"
+                               title="Agregar otro informe para este turno">
+                                + Informe
+                            </a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'informes:informe_create' %}?turno_id={{ turno.id }}"
+                           class="btn-nuevo-informe"
+                           title="Generar informe para este turno">
+                            📝 Nuevo Informe
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="table-empty-state">
+                    <div class="empty-icon">📅</div>
+                    <h3>No hay turnos pendientes</h3>
+                    <p>No se encontraron turnos con estado Pendiente o Presente.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+/* ── Turno ID Badge ── */
+.turno-id-cell { white-space: nowrap; }
+.turno-id-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: .25rem .6rem;
+    border-radius: 20px;
+    background: rgba(99,102,241,.15);
+    color: #a5b4fc;
+    font-weight: 700;
+    font-size: .85rem;
+    letter-spacing: .02em;
+}
+
+/* ── Fecha cell ── */
+.fecha-cell {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+.fecha-date { font-size: .9rem; color: var(--text, #f1f5f9); font-weight: 500; }
+.fecha-time { font-size: .82rem; color: #94a3b8; }
+
+/* ── Estado badges específicos de turno ── */
+.badge.estado-pendiente {
+    background: rgba(251,191,36,.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251,191,36,.3);
+}
+.badge.estado-presente {
+    background: rgba(52,211,153,.15);
+    color: #34d399;
+    border: 1px solid rgba(52,211,153,.3);
+}
+
+/* ── Botón Nuevo Informe ── */
+.btn-nuevo-informe {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem 1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    box-shadow: 0 2px 8px rgba(99,102,241,.35);
+}
+.btn-nuevo-informe:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(99,102,241,.5);
+    opacity: .95;
+}
+.btn-nuevo-mas {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    font-size: .78rem;
+    padding: .3rem .7rem;
+    box-shadow: 0 2px 6px rgba(14,165,233,.3);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+db.sqlite3
+/media/
+/staticfiles/
+*.log
+.DS_Store
+.idea/
+.vscode/
+Manual_Sistema_de_Informes.pdf
+preocupacional1.docx
+templates.zip
+test.pdf
+test2.pdf

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Paciente - MedicinaLab{% endblock %}
+
+{% block extra_css %}
+<style>
+  .delete-confirm-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .delete-confirm-card {
+    background: var(--card-bg, #1e293b);
+    border: 1px solid rgba(239,68,68,.35);
+    border-radius: 16px;
+    width: min(560px, 100%);
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    overflow: hidden;
+  }
+  .delete-confirm-header {
+    background: linear-gradient(135deg, rgba(239,68,68,.15), rgba(220,38,38,.08));
+    border-bottom: 1px solid rgba(239,68,68,.2);
+    padding: 1.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .delete-icon {
+    width: 52px; height: 52px;
+    background: rgba(239,68,68,.15);
+    border: 1.5px solid rgba(239,68,68,.3);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+  }
+  .delete-confirm-header h1 { margin:0; font-size:1.2rem; font-weight:700; color:var(--text,#f1f5f9); }
+  .delete-confirm-header p  { margin:.2rem 0 0; font-size:.85rem; color:#94a3b8; }
+  .delete-confirm-body { padding: 1.75rem 2rem; }
+  .warning-banner {
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.2);
+    border-radius: 10px;
+    padding: .9rem 1.1rem;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: flex-start; gap: .65rem;
+    font-size: .88rem; color: #fca5a5; line-height: 1.5;
+  }
+  .info-table {
+    width: 100%; border-collapse: collapse;
+    margin-bottom: 1.75rem; font-size: .88rem;
+  }
+  .info-table tr { border-bottom: 1px solid rgba(51,65,85,.5); }
+  .info-table tr:last-child { border-bottom: none; }
+  .info-table th {
+    padding: .65rem 0; color: #64748b; font-weight: 600;
+    text-align: left; width: 40%;
+    text-transform: uppercase; font-size: .75rem; letter-spacing: .04em;
+  }
+  .info-table td { padding: .65rem 0; color: var(--text,#f1f5f9); font-weight: 500; }
+  .delete-confirm-footer {
+    padding: 1.25rem 2rem 1.75rem;
+    display: flex; align-items: center; gap: .75rem;
+    border-top: 1px solid var(--border,#334155);
+  }
+  .btn-confirm-delete {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .6rem 1.4rem;
+    background: #ef4444; color: #fff;
+    border: none; border-radius: var(--radius,8px);
+    font-size: .9rem; font-weight: 700; cursor: pointer;
+    transition: background .2s, transform .1s;
+    font-family: inherit;
+  }
+  .btn-confirm-delete:hover { background: #dc2626; transform: translateY(-1px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Eliminar Paciente</h1>
+        <p class="page-subtitle">Confirme la accion antes de continuar.</p>
+    </div>
+    <a href="{% url 'pacientes:paciente_detail' paciente.pk %}" class="btn-secondary">Volver</a>
+</div>
+
+<div class="delete-confirm-wrapper">
+    <div class="delete-confirm-card">
+        <div class="delete-confirm-header">
+            <div class="delete-icon">🗑️</div>
+            <div>
+                <h1>Eliminar Paciente</h1>
+                <p>{{ paciente.apellido }}, {{ paciente.nombres }}</p>
+            </div>
+        </div>
+
+        <div class="delete-confirm-body">
+            <div class="warning-banner">
+                <span>⚠️</span>
+                <span>
+                    Se eliminara permanentemente este paciente y todos sus informes asociados
+                    podrian quedar sin referencia. Esta operacion es <strong>irreversible</strong>.
+                </span>
+            </div>
+
+            <table class="info-table">
+                <tr><th>ID</th><td>#{{ paciente.pk }}</td></tr>
+                <tr><th>Apellido</th><td>{{ paciente.apellido }}</td></tr>
+                <tr><th>Nombres</th><td>{{ paciente.nombres }}</td></tr>
+                <tr><th>DNI</th><td>{{ paciente.dni|default:"—" }}</td></tr>
+                <tr><th>Tel. Movil</th><td>{{ paciente.tel_movil|default:"—" }}</td></tr>
+                <tr><th>Obra Social</th><td>{{ paciente.obra_social|default:"—" }}</td></tr>
+                <tr><th>Email</th><td>{{ paciente.email|default:"—" }}</td></tr>
+            </table>
+        </div>
+
+        <div class="delete-confirm-footer">
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-confirm-delete" id="btn-confirm-delete">
+                    🗑️ Si, eliminar definitivamente
+                </button>
+            </form>
+            <a href="{% url 'pacientes:paciente_detail' paciente.pk %}" class="btn-cancel">Cancelar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

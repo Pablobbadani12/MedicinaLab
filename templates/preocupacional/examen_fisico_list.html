@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Examen Clínico — MedicinaLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h1 class="page-title">🏥 Examen Clínico Físico</h1>
+        <p class="page-subtitle">Listado de turnos para registrar y generar el reporte del Examen Clínico.</p>
+    </div>
+</div>
+
+<form method="get" action="" class="card" style="padding:1.2rem 1.5rem; margin-bottom:1.5rem;">
+    <div style="display:flex; gap:.75rem; align-items:center;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por apellido, nombre o DNI…" autofocus style="flex:1; padding:.6rem 1rem; border:1.5px solid #e5e7eb; border-radius:.5rem; font-size:.95rem; outline:none; background:#fff; color:var(--text-primary);">
+        <button type="submit" style="padding:.6rem 1.4rem; background:var(--brand-600); color:#fff; border:none; border-radius:.5rem; font-size:.95rem; cursor:pointer; font-weight:600;">🔍 Buscar</button>
+        {% if q %}
+        <a href="{% url 'preocupacional:examen_fisico_list' %}" style="padding:.6rem 1rem; color:var(--text-muted); font-size:.9rem; text-decoration:none;">✕ Limpiar</a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="card card-table">
+    <div style="padding:.75rem 1.2rem; border-bottom:1px solid #f3f4f6; font-size:.88rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+        <span>{{ turnos|length }} turno(s) encontrados.</span>
+        <span style="font-size:.8rem; color:var(--brand-600); font-weight:600;">🔒 Solo administradores</span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Fecha Turno</th>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Profesional</th>
+                <th>Estado Examen</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in turnos %}
+            <tr>
+                <td>
+                    <div style="font-weight:600;">{{ t.fecha_visita|date:"d/m/Y" }}</div>
+                    <div style="font-size:.8rem; color:var(--text-muted);">{{ t.hora_visita|time:"H:i" }}</div>
+                </td>
+                <td>
+                    <div class="user-fullname">{{ t.paciente.apellido }}, {{ t.paciente.nombres }}</div>
+                </td>
+                <td class="font-bold">{{ t.paciente.dni }}</td>
+                <td>{{ t.profesional }}</td>
+                <td>
+                    {% if t.examen_fisico %}
+                        <span class="badge finalizado">Cargado</span>
+                    {% else %}
+                        <span class="badge borrador">Falta cargar</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display:flex; gap:.4rem; align-items:center;">
+                        <a href="{% url 'preocupacional:examen_fisico_form' t.id %}" class="btn-action btn-action-edit" title="Cargar Información" style="background:var(--brand-600);">📋 Cargar</a>
+                        {% if t.examen_fisico %}
+                        <a href="{% url 'preocupacional:examen_fisico_pdf' t.examen_fisico.id %}" target="_blank" class="btn-action btn-action-view" title="Imprimir Informe">🖨️ Imprimir</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="table-empty-state">
+                    <div class="empty-icon">🏥</div>
+                    <h3>No hay turnos registrados</h3>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

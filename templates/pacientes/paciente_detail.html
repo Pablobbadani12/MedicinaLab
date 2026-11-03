@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Ficha de {{ paciente.apellido }} - MedicinaLab{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Ficha de Paciente</h1>
+        <p class="page-subtitle">{{ paciente.apellido }}, {{ paciente.nombres }}</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'pacientes:paciente_list' %}" class="btn-secondary">Volver</a>
+        <a href="{% url 'pacientes:paciente_edit' paciente.pk %}" class="btn-primary">✏️ Editar</a>
+        <a href="{% url 'pacientes:paciente_delete' paciente.pk %}" class="btn-delete">🗑️ Eliminar</a>
+        <a href="{% url 'informes:imprimir_consolidado' paciente.pk %}" class="btn-print">🖨️ Historial PDF</a>
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="card detail-card">
+
+        <!-- ── Datos Personales ── -->
+        <div class="detail-section">
+            <h3 class="section-title">Información Personal</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Apellido</span>
+                    <span class="info-value">{{ paciente.apellido }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nombres</span>
+                    <span class="info-value">{{ paciente.nombres }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">DNI / Pasaporte</span>
+                    <span class="info-value">{{ paciente.dni|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CUIL</span>
+                    <span class="info-value">{{ paciente.cuil|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Sexo</span>
+                    <span class="info-value">{{ paciente.get_sexo_display|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Estado Civil</span>
+                    <span class="info-value">{{ paciente.get_estado_civil_display|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nacionalidad</span>
+                    <span class="info-value">{{ paciente.nacionalidad|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Contacto ── -->
+        <div class="detail-section">
+            <h3 class="section-title">Contacto</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Tel. Móvil</span>
+                    <span class="info-value">{{ paciente.tel_movil|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ paciente.email|default:"-" }}</span>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <span class="info-label">Dirección</span>
+                    <span class="info-value">{{ paciente.direccion|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Datos Laborales ── -->
+        <div class="detail-section">
+            <h3 class="section-title">Datos Laborales</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Empresa</span>
+                    <span class="info-value">{{ paciente.empresa|default:"-" }}</span>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <span class="info-label">Tarea Propuesta</span>
+                    <span class="info-value" style="white-space: pre-wrap;">{{ paciente.tarea_propuesta|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Informes Médicos ── -->
+        <div class="detail-section">
+            <h3 class="section-title">Informes Médicos Asociados</h3>
+            <div class="associated-reports-list">
+                {% for inf in informes %}
+                <div class="associated-report-item">
+                    <div class="rep-meta">
+                        <span class="badge {{ inf.estado|lower }}">{{ inf.estado }}</span>
+                        <span class="rep-date">{{ inf.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <h4 class="rep-title">Informe #{{ inf.id }} - Diagnostico General</h4>
+                    <p class="rep-excerpt">{{ inf.texto_informe|truncatechars:180 }}</p>
+                    <div class="rep-footer">
+                        <span>Firmado por: <strong>Dr/a. {{ inf.profesional.apellido }} (Mat. {{ inf.profesional.matricula }})</strong></span>
+                        <a href="{% url 'informes:informe_detail' inf.pk %}" class="btn-link">Ver completo</a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state-small">
+                    <p>No hay informes cargados para este paciente.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

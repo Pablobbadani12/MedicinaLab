@@ -1,0 +1,41 @@
+{% load static %}
+<div class="sidebar-brand" style="justify-content: center; background: transparent; border: none; padding: 1.5rem 1rem 0.5rem;">
+    <img src="{% static 'img/logo.png' %}" alt="Visión Salud" style="max-width: 180px; height: auto;">
+</div>
+<nav class="sidebar-nav">
+    <ul>
+        <li>
+            <a href="{% url 'informes:informe_list' %}" class="nav-item {% if request.resolver_match.namespace == 'informes' %}active{% endif %}">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Informes Médicos</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'turnos:reserva_list' %}" class="nav-item {% if request.resolver_match.namespace == 'turnos' %}active{% endif %}">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Reserva de Turnos</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'pacientes:paciente_list' %}" class="nav-item {% if request.resolver_match.namespace == 'pacientes' %}active{% endif %}">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Pacientes</span>
+            </a>
+        </li>
+
+        {% if user.is_staff %}
+        <li>
+            <a href="{% url 'preocupacional:preocupacional_list' %}" class="nav-item {% if request.resolver_match.namespace == 'preocupacional' and request.resolver_match.url_name == 'preocupacional_list' %}active{% endif %}" style="border-left: 3px solid var(--brand-400);">
+                <span class="nav-icon">🩺</span>
+                <span class="nav-label">Preocupacional</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'preocupacional:examen_fisico_list' %}" class="nav-item {% if request.resolver_match.url_name == 'examen_fisico_list' or request.resolver_match.url_name == 'examen_fisico_form' %}active{% endif %}" style="border-left: 3px solid var(--brand-600);">
+                <span class="nav-icon">🏥</span>
+                <span class="nav-label">Examen Clínico</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>

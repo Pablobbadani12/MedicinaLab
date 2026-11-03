@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión — MedicinaLab</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-900: #7c2d12;
+            --brand-700: #c2410c;
+            --brand-600: #f05133;
+            --brand-500: #f4755c;
+            --brand-400: #f79886;
+            --brand-300: #fac0b5;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            background: #291a16;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(240,81,51,0.30) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 90% 110%, rgba(244,117,92,0.15) 0%, transparent 60%);
+        }
+
+        /* decorative circles */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.07;
+        }
+        body::before {
+            width: 500px; height: 500px;
+            background: var(--brand-500);
+            top: -150px; left: -150px;
+        }
+        body::after {
+            width: 400px; height: 400px;
+            background: var(--brand-400);
+            bottom: -120px; right: -120px;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Logo */
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-logo .icon {
+            width: 68px;
+            height: 68px;
+            background: linear-gradient(135deg, var(--brand-700), var(--brand-400));
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 40px rgba(16,185,129,0.45);
+        }
+        .login-logo h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        .login-logo h1 span { color: var(--brand-400); }
+        .login-logo p {
+            color: #6ee7b7;
+            font-size: 0.875rem;
+            margin-top: 0.3rem;
+            opacity: 0.8;
+        }
+
+        /* Card */
+        .login-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(52,211,153,0.2);
+            border-radius: 20px;
+            padding: 2.25rem;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+            backdrop-filter: blur(12px);
+        }
+        .login-card h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 1.75rem;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        /* Form */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--brand-300);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(52,211,153,0.25);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .form-group input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-group input:focus {
+            border-color: var(--brand-500);
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* Login button */
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, var(--brand-600), var(--brand-500));
+            color: #fff;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.40);
+            letter-spacing: 0.01em;
+        }
+        .btn-login:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(16,185,129,0.55);
+        }
+        .btn-login:active { transform: translateY(0); }
+
+        /* Error */
+        .error-list {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .error-list ul { list-style: none; }
+        .error-list li {
+            color: #fca5a5;
+            font-size: 0.875rem;
+            padding: 0.125rem 0;
+        }
+        .error-list li::before { content: '⚠ '; }
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            margin-top: 1.75rem;
+            color: rgba(110,231,183,0.4);
+            font-size: 0.8rem;
+        }
+        @media (max-width: 480px) {
+            .login-wrapper { padding: 1rem; }
+            .login-card { padding: 1.5rem 1.25rem; }
+            .login-logo img { max-width: 200px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-logo" style="text-align: center; margin-bottom: 2rem;">
+            <img src="{% static 'img/logo.png' %}" alt="Visión Salud" style="max-width: 260px; margin: 0 auto; display: block;">
+        </div>
+
+        <div class="login-card">
+            <h2>Iniciar Sesión</h2>
+
+            {% if form.errors %}
+            <div class="error-list">
+                <ul>
+                    <li>Usuario o contraseña incorrectos. Intente nuevamente.</li>
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                <div class="form-group">
+                    <label for="id_username">Usuario</label>
+                    <input type="text" id="id_username" name="username"
+                           autofocus autocomplete="off"
+                           placeholder="Ingrese su usuario">
+                </div>
+                <div class="form-group">
+                    <label for="id_password">Contraseña</label>
+                    <input type="password" id="id_password" name="password"
+                           autocomplete="new-password"
+                           placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-login">Ingresar al sistema</button>
+            </form>
+        </div>
+
+        <p class="footer-note">© 2026 MedicinaLab — Medicina Laboral</p>
+    </div>
+</body>
+</html>

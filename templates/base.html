@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MedicinaLab - Panel de Control{% endblock %}</title>
+    {% load static %}
+    <!-- Google Fonts Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos Premium -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            {% include 'includes/_sidebar.html' %}
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <main class="content">
+            <header class="top-bar">
+                {% include 'includes/_navbar.html' %}
+            </header>
+            <div class="main-body">
+                {% include 'includes/_messages.html' %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    <script src="{% static 'js/base.js' %}?v=2"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

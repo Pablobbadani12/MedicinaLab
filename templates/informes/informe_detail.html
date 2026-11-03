@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Informe #{{ informe.id }} - MedicinaLab{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Detalle del Informe Médico</h1>
+        <p class="page-subtitle">ID Único de Examen: #{{ informe.id }}</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'informes:informe_list' %}" class="btn-secondary">Volver al listado</a>
+        <a href="{% url 'informes:imprimir_informe' informe.pk %}" class="btn-print" target="_blank">🖨️ Imprimir PDF</a>
+        {% if informe.estado != 'FINALIZADO' %}
+        <a href="{% url 'informes:informe_edit' informe.pk %}" class="btn-primary">✏️ Editar Informe</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="card detail-card">
+        <div class="detail-section">
+            <h3 class="section-title">Información del Paciente</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Nombre Completo</span>
+                    <span class="info-value">{{ informe.paciente.apellido }}, {{ informe.paciente.nombres }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Documento Nacional de Identidad (DNI)</span>
+                    <span class="info-value">{{ informe.paciente.dni }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fecha de Nacimiento</span>
+                    <span class="info-value">{{ informe.paciente.fecha_nacimiento|date:"d/m/Y"|default:"No Registrada" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Historial Clínico Consolidado</span>
+                    <a href="{% url 'informes:imprimir_consolidado' informe.paciente.pk %}" class="btn-link">⬇️ Descargar Todo el Historial (PDF)</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3 class="section-title">Información Profesional & Empresa</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Profesional Firmante</span>
+                    <span class="info-value">{{ informe.profesional }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Especialidad</span>
+                    <span class="info-value">{{ informe.profesional.especialidad.nombre|default:"General" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Matrícula Nacional / Provincial</span>
+                    <span class="info-value">{{ informe.profesional.matricula }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Empresa Solicitante</span>
+                    <span class="info-value">{{ informe.empresa.nombre|default:"Particular" }} (CUIT: {{ informe.empresa.cuit|default:"-" }})</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3 class="section-title">Detalle del Diagnóstico</h3>
+            <div class="diagnostico-box">
+                {{ informe.texto_informe }}
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3 class="section-title">Metadatos del Registro</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Estado Ficha</span>
+                    <span class="badge {{ informe.estado|lower }}">{{ informe.estado }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fecha Registro</span>
+                    <span class="info-value">{{ informe.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Última Actualización</span>
+                    <span class="info-value">{{ informe.fecha_actualizacion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Archivo PDF Oficial</span>
+                    {% if informe.archivo_pdf %}
+                    <a href="{{ informe.archivo_pdf.url }}" class="btn-pdf-download" target="_blank">📄 Ver Archivo Adjunto</a>
+                    {% else %}
+                    <span class="info-value text-muted">Ningún PDF adjunto</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

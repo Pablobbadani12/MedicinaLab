@@ -1,0 +1,23 @@
+<div class="navbar-wrapper">
+    <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+    <div class="navbar-search">
+        <input type="text" placeholder="Buscar pacientes, informes..." class="search-input">
+    </div>
+    <div class="user-profile-menu">
+        <div class="user-avatar">{{ request.user.username|slice:":2"|upper }}</div>
+        <div class="user-info-text">
+            <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+            <span class="user-role">Usuario del sistema</span>
+        </div>
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-logout">Cerrar sesión</button>
+        </form>
+    </div>
+</div>

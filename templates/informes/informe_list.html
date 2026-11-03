@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Informes Médicos - MedicinaLab{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h1 class="page-title">Informes Preocupacionales</h1>
+        <p class="page-subtitle">Listado general de exámenes clínicos preocupacionales registrados.</p>
+    </div>
+
+</div>
+
+<div class="card card-table">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Paciente</th>
+                <th>Profesional Interviniente</th>
+                <th>Empresa Solicitante</th>
+                <th>Estado</th>
+                <th>Fecha de Creación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for informe in informes %}
+            <tr>
+                <td class="font-bold">#{{ informe.id }}</td>
+                <td>
+                    <div class="user-cell">
+                        <span class="user-initials">{{ informe.paciente.apellido|slice:":1" }}{{ informe.paciente.nombres|slice:":1" }}</span>
+                        <div>
+                            <div class="user-fullname">{{ informe.paciente.apellido }}, {{ informe.paciente.nombres }}</div>
+                            <div class="user-subtext">DNI: {{ informe.paciente.dni }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="prof-name">{{ informe.profesional }}</div>
+                    <div class="prof-sub">M.N. {{ informe.profesional.matricula }}</div>
+                </td>
+                <td>
+                    <span class="company-tag">{{ informe.empresa.nombre|default:"Particular" }}</span>
+                </td>
+                <td>
+                    <span class="badge {{ informe.estado|lower }}">{{ informe.estado }}</span>
+                </td>
+                <td>{{ informe.fecha_creacion|date:"d M Y" }}</td>
+                <td>
+                    <div class="btn-actions-group">
+                        <a href="{% url 'informes:informe_detail' informe.pk %}" class="btn-action btn-action-view" title="Ver Detalle">👁</a>
+                        <a href="{% url 'informes:imprimir_informe' informe.pk %}" class="btn-action btn-action-print" title="Imprimir PDF" target="_blank">🖨</a>
+                        {% if informe.estado != 'FINALIZADO' %}
+                        <a href="{% url 'informes:informe_edit' informe.pk %}" class="btn-action btn-action-edit" title="Editar">✏</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="table-empty-state">
+                    <div class="empty-icon">📂</div>
+                    <h3>No hay informes registrados</h3>
+                    <p>Comienza creando un informe preocupacional utilizando el botón de arriba.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

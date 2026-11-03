@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pacientes - MedicinaLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h1 class="page-title">Gestión de Pacientes</h1>
+        <p class="page-subtitle">Administre el registro de pacientes: busque, cree, edite o elimine fichas.</p>
+    </div>
+    {% if es_supervisor %}
+    <div class="page-header-actions">
+        <a href="{% url 'pacientes:paciente_create' %}" class="btn-primary" id="btn-nuevo-paciente">
+            <span class="btn-icon">➕</span> Nuevo Paciente
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Buscador -->
+<form method="get" action="" class="card" style="padding:1.2rem 1.5rem; margin-bottom:1.5rem;">
+    <div style="display:flex; gap:.75rem; align-items:center;">
+        <input
+            type="text"
+            name="q"
+            value="{{ q }}"
+            placeholder="Buscar por apellido, nombre o DNI…"
+            autofocus
+            id="search-input"
+            style="flex:1; padding:.6rem 1rem; border:1.5px solid var(--border,#334155);
+                   border-radius:.5rem; font-size:.95rem; outline:none;
+                   background:var(--input-bg,#1e293b); color:var(--text,#f1f5f9);"
+        >
+        <button type="submit"
+                style="padding:.6rem 1.4rem; background:var(--accent,#6366f1); color:#fff;
+                       border:none; border-radius:.5rem; font-size:.95rem; cursor:pointer;
+                       font-weight:600;">
+            🔍 Buscar
+        </button>
+        {% if q %}
+        <a href="{% url 'pacientes:paciente_list' %}"
+           style="padding:.6rem 1rem; color:var(--text-muted,#94a3b8); font-size:.9rem; text-decoration:none;">
+            ? Limpiar
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Tabla de resultados -->
+<div class="card card-table">
+
+    {% if page_obj.paginator.count > 0 %}
+    <div style="padding:.75rem 1.2rem; border-bottom:1px solid var(--border,#334155);
+                font-size:.88rem; color:var(--text-muted,#94a3b8); display:flex; justify-content:space-between; align-items:center;">
+        <span>
+            {{ page_obj.paginator.count }} paciente{{ page_obj.paginator.count|pluralize }}
+            — página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if q %}
+        <span>Filtrado por: <strong style="color:var(--text,#f1f5f9);">"{{ q }}"</strong></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Dirección</th>
+                <th>Tel. Móvil</th>
+                <th>Obra Social</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pacientes %}
+            <tr>
+                <td>
+                    <div class="user-cell">
+                        <span class="user-initials">{{ p.apellido|slice:":1" }}{{ p.nombres|slice:":1" }}</span>
+                        <div>
+                            <div class="user-fullname">{{ p.apellido }}, {{ p.nombres }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="font-bold">{{ p.dni|default:"-" }}</td>
+                <td>{{ p.direccion|default:"-"|truncatechars:30 }}</td>
+                <td>{{ p.tel_movil|default:"-" }}</td>
+                <td>{{ p.obra_social|default:"-" }}</td>
+                <td>{{ p.email|default:"-" }}</td>
+                <td>
+                    <div style="display:flex; gap:.35rem;">
+                        <a href="{% url 'pacientes:paciente_detail' p.pk %}" class="btn-action btn-action-view" title="Ver Ficha">👁️</a>
+                        <a href="{% url 'pacientes:paciente_edit' p.pk %}" class="btn-action btn-action-edit" title="Editar">✏️</a>
+                        <a href="{% url 'pacientes:paciente_delete' p.pk %}" class="btn-action btn-action-delete" title="Eliminar">🗑️</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="table-empty-state">
+                    <div class="empty-icon">📂</div>
+                    {% if q %}
+                    <h3>Sin resultados</h3>
+                    <p>No se encontraron pacientes para <strong>"{{ q }}"</strong>.</p>
+                    {% else %}
+                    <h3>No hay pacientes registrados</h3>
+                    {% if es_supervisor %}
+                    <p>Comience creando el primer paciente con el botón <strong>"Nuevo Paciente"</strong>.</p>
+                    {% else %}
+                    <p>No hay pacientes registrados actualmente.</p>
+                    {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <nav style="display:flex; justify-content:center; align-items:center; gap:.5rem;
+                padding:1rem; border-top:1px solid var(--border,#334155);">
+        {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&page={{ page_obj.previous_page_number }}"
+           style="padding:.4rem .9rem; border:1px solid var(--border,#334155);
+                  border-radius:.4rem; text-decoration:none; color:inherit;">‹ Anterior</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span style="padding:.4rem .9rem; background:var(--accent,#6366f1); color:#fff;
+                         border-radius:.4rem; font-weight:600;">{{ num }}</span>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+            <a href="?q={{ q }}&page={{ num }}"
+               style="padding:.4rem .9rem; border:1px solid var(--border,#334155);
+                      border-radius:.4rem; text-decoration:none; color:inherit;">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?q={{ q }}&page={{ page_obj.next_page_number }}"
+           style="padding:.4rem .9rem; border:1px solid var(--border,#334155);
+                  border-radius:.4rem; text-decoration:none; color:inherit;">Siguiente ›</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

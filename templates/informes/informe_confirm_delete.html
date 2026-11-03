@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Informe #{{ informe.id }} - MedicinaLab{% endblock %}
+
+{% block extra_css %}
+<style>
+  .delete-confirm-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .delete-confirm-card {
+    background: var(--card-bg, #1e293b);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 16px;
+    width: min(560px, 100%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(239, 68, 68, 0.1);
+    overflow: hidden;
+  }
+
+  .delete-confirm-header {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08));
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 1.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .delete-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1.5px solid rgba(239, 68, 68, 0.3);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .delete-confirm-header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text, #f1f5f9);
+    line-height: 1.3;
+  }
+
+  .delete-confirm-header p {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  .delete-confirm-body {
+    padding: 1.75rem 2rem;
+  }
+
+  .warning-banner {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    font-size: 0.88rem;
+    color: #fca5a5;
+    line-height: 1.5;
+  }
+
+  .informe-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.75rem;
+    font-size: 0.88rem;
+  }
+
+  .informe-info-table tr {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  }
+
+  .informe-info-table tr:last-child { border-bottom: none; }
+
+  .informe-info-table th {
+    padding: 0.65rem 0;
+    color: #64748b;
+    font-weight: 600;
+    text-align: left;
+    width: 40%;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+
+  .informe-info-table td {
+    padding: 0.65rem 0;
+    color: var(--text, #f1f5f9);
+    font-weight: 500;
+  }
+
+  .estado-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .estado-BORRADOR   { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+  .estado-EN_CURSO   { background: rgba(99,102,241,0.15);  color: #a5b4fc; }
+  .estado-FINALIZADO { background: rgba(52,211,153,0.15);  color: #34d399; }
+
+  .delete-confirm-footer {
+    padding: 1.25rem 2rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border, #334155);
+  }
+
+  .btn-confirm-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.4rem;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius, 8px);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+
+  .btn-confirm-delete:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Eliminar Informe</h1>
+        <p class="page-subtitle">Confirme la accion antes de continuar.</p>
+    </div>
+    <a href="{% url 'informes:informe_edit' informe.pk %}" class="btn-secondary">Volver a editar</a>
+</div>
+
+<div class="delete-confirm-wrapper">
+    <div class="delete-confirm-card">
+
+        <div class="delete-confirm-header">
+            <div class="delete-icon">🗑️</div>
+            <div>
+                <h1>Eliminar Informe #{{ informe.id }}</h1>
+                <p>Esta accion no se puede deshacer</p>
+            </div>
+        </div>
+
+        <div class="delete-confirm-body">
+            <div class="warning-banner">
+                <span>⚠️</span>
+                <span>
+                    Se eliminara permanentemente este informe medico junto con todos sus datos asociados.
+                    Esta operacion es <strong>irreversible</strong>.
+                </span>
+            </div>
+
+            <table class="informe-info-table">
+                <tr>
+                    <th>ID Informe</th>
+                    <td>#{{ informe.id }}</td>
+                </tr>
+                <tr>
+                    <th>Paciente</th>
+                    <td>
+                        {% if informe.paciente %}
+                            {{ informe.paciente.apellido }}, {{ informe.paciente.nombres }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Profesional</th>
+                    <td>{{ informe.profesional|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <th>Empresa</th>
+                    <td>{{ informe.empresa|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <th>Estado</th>
+                    <td>
+                        <span class="estado-badge estado-{{ informe.estado }}">
+                            {{ informe.get_estado_display }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Fecha de creacion</th>
+                    <td>{{ informe.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="delete-confirm-footer">
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-confirm-delete" id="btn-confirm-delete">
+                    🗑️ Si, eliminar definitivamente
+                </button>
+            </form>
+            <a href="{% url 'informes:informe_edit' informe.pk %}" class="btn-cancel">
+                Cancelar
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

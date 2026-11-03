@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Paciente - MedicinaLab{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    margin-bottom: 1.75rem;
+  }
+  .form-section-title {
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #64748b;
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid var(--border, #334155);
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.1rem;
+  }
+  .form-group label {
+    display: block;
+    font-size: .83rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: .35rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .form-group label .required { color: #ef4444; }
+  .form-control {
+    width: 100%;
+    padding: .6rem .9rem;
+    border: 1.5px solid var(--border, #334155);
+    border-radius: 8px;
+    background: var(--input-bg, #1e293b);
+    color: var(--text, #f1f5f9);
+    font-size: .95rem;
+    transition: border-color .2s;
+    box-sizing: border-box;
+  }
+  .form-control:focus {
+    outline: none;
+    border-color: var(--accent, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+  }
+  select.form-control option {
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+  textarea.form-control {
+    resize: vertical;
+    min-height: 4.5rem;
+  }
+  .field-error {
+    color: #ef4444;
+    font-size: .8rem;
+    margin-top: .3rem;
+  }
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border, #334155);
+    margin-top: 1.75rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ action }} Paciente</h1>
+        <p class="page-subtitle">Complete los datos del paciente y guarde el registro.</p>
+    </div>
+    <a href="{% url 'pacientes:paciente_list' %}" class="btn-secondary">Volver al listado</a>
+</div>
+
+<div class="card" style="padding: 2rem;">
+    <form method="post" class="form-elegant" id="paciente-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="field-error" style="margin-bottom:1rem; padding:.75rem 1rem; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2); border-radius:8px;">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- ── Datos Personales ── -->
+        <div class="form-section">
+            <div class="form-section-title">Datos Personales</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_apellido">Apellido <span class="required">*</span></label>
+                    {{ form.apellido }}
+                    {% if form.apellido.errors %}<div class="field-error">{{ form.apellido.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_nombres">Nombres <span class="required">*</span></label>
+                    {{ form.nombres }}
+                    {% if form.nombres.errors %}<div class="field-error">{{ form.nombres.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_dni">DNI / Pasaporte <span class="required">*</span></label>
+                    {{ form.dni }}
+                    {% if form.dni.errors %}<div class="field-error">{{ form.dni.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_cuil">CUIL <small style="font-weight:400;text-transform:none;">(11 dígitos)</small></label>
+                    {{ form.cuil }}
+                    {% if form.cuil.errors %}<div class="field-error">{{ form.cuil.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_sexo">Sexo</label>
+                    {{ form.sexo }}
+                    {% if form.sexo.errors %}<div class="field-error">{{ form.sexo.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_estado_civil">Estado Civil</label>
+                    {{ form.estado_civil }}
+                    {% if form.estado_civil.errors %}<div class="field-error">{{ form.estado_civil.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_nacionalidad">Nacionalidad</label>
+                    {{ form.nacionalidad }}
+                    {% if form.nacionalidad.errors %}<div class="field-error">{{ form.nacionalidad.errors }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Contacto ── -->
+        <div class="form-section">
+            <div class="form-section-title">Contacto</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_tel_movil">Tel. Móvil</label>
+                    {{ form.tel_movil }}
+                    {% if form.tel_movil.errors %}<div class="field-error">{{ form.tel_movil.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="field-error">{{ form.email.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="id_direccion">Dirección</label>
+                    {{ form.direccion }}
+                    {% if form.direccion.errors %}<div class="field-error">{{ form.direccion.errors }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Datos Laborales ── -->
+        <div class="form-section">
+            <div class="form-section-title">Datos Laborales</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_empresa">Empresa</label>
+                    {{ form.empresa }}
+                    {% if form.empresa.errors %}<div class="field-error">{{ form.empresa.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="id_tarea_propuesta">Tarea Propuesta</label>
+                    {{ form.tarea_propuesta }}
+                    {% if form.tarea_propuesta.errors %}<div class="field-error">{{ form.tarea_propuesta.errors }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-save" id="btn-guardar-paciente">💾 Guardar Paciente</button>
+            {% if action == 'Editar' and paciente %}
+            <a href="{% url 'pacientes:paciente_detail' paciente.pk %}" class="btn-cancel">Cancelar</a>
+            <a href="{% url 'pacientes:paciente_delete' paciente.pk %}" class="btn-delete" style="margin-left:auto;">🗑️ Eliminar</a>
+            {% else %}
+            <a href="{% url 'pacientes:paciente_list' %}" class="btn-cancel">Cancelar</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

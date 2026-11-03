@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Empresas - MedicinaLab{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h1 class="page-title">Gestión de Empresas</h1>
+        <p class="page-subtitle">Administre las empresas clientes asociadas al servicio preocupacional.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'empresas:empresa_create' %}" class="btn-primary">
+            <span class="btn-icon">+</span> Registrar Empresa
+        </a>
+    </div>
+</div>
+
+<div class="card card-table">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>CUIT</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empresa in empresas %}
+            <tr>
+                <td class="font-bold">{{ empresa.nombre }}</td>
+                <td>{{ empresa.cuit }}</td>
+                <td>{{ empresa.direccion|default:"-" }}</td>
+                <td>{{ empresa.telefono|default:"-" }}</td>
+                <td>
+                    {% if empresa.activa %}
+                    <span class="badge finalizado">Activa</span>
+                    {% else %}
+                    <span class="badge borrador">Inactiva</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="table-empty-state">
+                    <div class="empty-icon">🏢</div>
+                    <h3>No hay empresas registradas</h3>
+                    <p>Registre su primera empresa cliente para asociarla con los exámenes preocupacionales.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

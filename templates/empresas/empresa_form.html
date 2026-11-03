@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Crear / Editar Empresa - MedicinaLab{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ form.instance.pk|yesno:"Editar Empresa,Crear Empresa" }}</h1>
+        <p class="page-subtitle">Complete los datos de la empresa cliente.</p>
+    </div>
+    <a href="{% url 'empresas:empresa_list' %}" class="btn-secondary">Volver al listado</a>
+</div>
+
+<div class="card card-form-layout">
+    <form method="post" class="form-elegant">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="field-error">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="btn-save">💾 Guardar Empresa</button>
+            <a href="{% url 'empresas:empresa_list' %}" class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Preocupacional — MedicinaLab{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-text">
+        <h1 class="page-title">🩺 Exámenes Preocupacionales</h1>
+        <p class="page-subtitle">Seleccione un paciente para cargar o editar su examen preocupacional.</p>
+    </div>
+</div>
+
+<!-- Buscador -->
+<form method="get" action="" class="card" style="padding:1.2rem 1.5rem; margin-bottom:1.5rem;">
+    <div style="display:flex; gap:.75rem; align-items:center;">
+        <input
+            type="text"
+            name="q"
+            value="{{ q }}"
+            placeholder="Buscar por apellido, nombre o DNI…"
+            autofocus
+            id="search-input"
+            style="flex:1; padding:.6rem 1rem; border:1.5px solid #e5e7eb;
+                   border-radius:.5rem; font-size:.95rem; outline:none;
+                   background:#fff; color:var(--text-primary);"
+        >
+        <button type="submit"
+                style="padding:.6rem 1.4rem; background:var(--brand-600); color:#fff;
+                       border:none; border-radius:.5rem; font-size:.95rem; cursor:pointer;
+                       font-weight:600;">
+            🔍 Buscar
+        </button>
+        {% if q %}
+        <a href="{% url 'preocupacional:preocupacional_list' %}"
+           style="padding:.6rem 1rem; color:var(--text-muted); font-size:.9rem; text-decoration:none;">
+            ✕ Limpiar
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Tabla de pacientes -->
+<div class="card card-table">
+
+    <div style="padding:.75rem 1.2rem; border-bottom:1px solid #f3f4f6;
+                font-size:.88rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+        <span>
+            {% with total=pacientes|length %}
+                {{ total }} paciente{{ total|pluralize }}
+                {% if q %} — filtrado por <strong style="color:var(--text-primary);">"{{ q }}"</strong>{% endif %}
+            {% endwith %}
+        </span>
+        <span style="font-size:.8rem; color:var(--brand-600); font-weight:600;">
+            🔒 Solo administradores
+        </span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Empresa</th>
+                <th>Último Turno</th>
+                <th>Profesional</th>
+                <th>Examen</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pacientes %}
+            {% with ultimo_turno=p.turnos_list|first ultimo_exam=p.examenes_list|first %}
+            <tr>
+                <td>
+                    <div class="user-cell">
+                        <span class="user-initials">{{ p.apellido|slice:":1" }}{{ p.nombres|slice:":1" }}</span>
+                        <div>
+                            <div class="user-fullname">{{ p.apellido }}, {{ p.nombres }}</div>
+                            {% if p.tarea_propuesta %}
+                            <div class="user-subtext">{{ p.tarea_propuesta|truncatechars:40 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td class="font-bold">{{ p.dni|default:"—" }}</td>
+                <td>
+                    {% if p.empresa %}
+                    <span class="company-tag">{{ p.empresa.nombre|truncatechars:25 }}</span>
+                    {% else %}
+                    <span style="color:var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ultimo_turno %}
+                        <div style="font-size:.85rem; font-weight:600; color:var(--text-primary);">
+                            {{ ultimo_turno.fecha_visita|date:"d/m/Y" }}
+                        </div>
+                        <div style="font-size:.75rem; color:var(--text-muted);">
+                            {{ ultimo_turno.hora_visita|time:"H:i" }}
+                        </div>
+                    {% else %}
+                        <span style="color:var(--text-muted);">Sin turnos</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ultimo_turno %}
+                        <div class="prof-name">{{ ultimo_turno.profesional }}</div>
+                    {% else %}
+                        <span style="color:var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ultimo_exam %}
+                        {% if ultimo_exam.resultado == 'APTO' %}
+                        <span class="badge finalizado">✔ Apto</span>
+                        {% elif ultimo_exam.resultado == 'APTO_OBS' %}
+                        <span class="badge en_revision">⚠ Apto c/Obs.</span>
+                        {% elif ultimo_exam.resultado == 'NO_APTO' %}
+                        <span class="badge" style="background:#fee2e2;color:#b91c1c;">✘ No Apto</span>
+                        {% else %}
+                        <span class="badge borrador">Pendiente</span>
+                        {% endif %}
+                        <div style="font-size:.72rem; color:var(--text-muted); margin-top:.2rem;">
+                            {{ ultimo_exam.fecha|date:"d/m/Y" }}
+                        </div>
+                    {% else %}
+                        <span style="color:var(--text-muted); font-size:.82rem;">Sin examen</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display:flex; gap:.4rem; align-items:center;">
+                        {% if ultimo_exam %}
+                        <a href="{% url 'preocupacional:preocupacional_edit' ultimo_exam.pk %}"
+                           class="btn-action btn-action-edit" title="Editar examen">✏️</a>
+                        <a href="{% url 'preocupacional:preocupacional_pdf' ultimo_exam.pk %}"
+                           class="btn-action btn-action-print" title="Imprimir PDF Completo" target="_blank">🖨</a>
+                        {% endif %}
+                        <a href="{% url 'preocupacional:preocupacional_create' p.pk %}"
+                           class="btn-action btn-action-view" title="Nuevo examen preocupacional"
+                           style="background:var(--brand-600);">➕</a>
+                    </div>
+                </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr>
+                <td colspan="7" class="table-empty-state">
+                    <div class="empty-icon">🩺</div>
+                    {% if q %}
+                    <h3>Sin resultados</h3>
+                    <p>No se encontraron pacientes para <strong>"{{ q }}"</strong>.</p>
+                    {% else %}
+                    <h3>No hay pacientes registrados</h3>
+                    <p>Registre pacientes en el módulo <a href="{% url 'pacientes:paciente_list' %}">Pacientes</a>.</p>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
