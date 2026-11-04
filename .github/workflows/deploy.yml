@@ -18,7 +18,7 @@ jobs:
       - name: Verificar archivos sensibles
         shell: bash
         run: |
-          if git ls-files | grep -E '(^|/)(\.env|media/|\.venv/|db\.sqlite3$)'; then
+          if git ls-files | grep -E '(^|/)\.env$|(^|/)media/|(^|/)\.venv/|(^|/)db\.sqlite3$'; then
             echo "ERROR: hay archivos sensibles versionados"
             exit 1
           fi
