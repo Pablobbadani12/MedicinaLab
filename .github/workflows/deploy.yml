@@ -1,0 +1,51 @@
+
+name: Publicar MedicinaLab en OCI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar archivos sensibles
+        shell: bash
+        run: |
+          if git ls-files | grep -E '(^|/)(\.env|media/|\.venv/|db\.sqlite3$)'; then
+            echo "ERROR: hay archivos sensibles versionados"
+            exit 1
+          fi
+
+      - name: Preparar paquete
+        run: git archive --format=tar.gz --output=release.tar.gz HEAD
+
+      - name: Configurar SSH
+        env:
+          OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
+          OCI_KNOWN_HOSTS: ${{ secrets.OCI_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$OCI_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$OCI_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null
+
+      - name: Transferir codigo a OCI
+        env:
+          OCI_HOST: ${{ secrets.OCI_HOST }}
+          OCI_USER: ${{ secrets.OCI_USER }}
+        run: |
+          RELEASE_DIR="/u03/deploy/MedicinaLab/incoming/${GITHUB_RUN_ID}"
+          ssh "$OCI_USER@$OCI_HOST" "mkdir -p '$RELEASE_DIR'"
+          scp release.tar.gz "$OCI_USER@$OCI_HOST:$RELEASE_DIR/"
+          ssh "$OCI_USER@$OCI_HOST" \
+            "mkdir -p '$RELEASE_DIR/source' && tar -xzf '$RELEASE_DIR/release.tar.gz' -C '$RELEASE_DIR/source' && echo 'TRANSFERENCIA CORRECTA' && ls -la '$RELEASE_DIR/source'"
