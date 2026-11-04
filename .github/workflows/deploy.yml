@@ -1,5 +1,4 @@
-@'
-name: Publicar MedicinaLab en OCI
+﻿name: Publicar MedicinaLab en OCI
 
 on:
   workflow_dispatch:
