@@ -1,4 +1,4 @@
-
+@'
 name: Publicar MedicinaLab en OCI
 
 on:
@@ -49,3 +49,4 @@ jobs:
           scp release.tar.gz "$OCI_USER@$OCI_HOST:$RELEASE_DIR/"
           ssh "$OCI_USER@$OCI_HOST" \
             "mkdir -p '$RELEASE_DIR/source' && tar -xzf '$RELEASE_DIR/release.tar.gz' -C '$RELEASE_DIR/source' && echo 'TRANSFERENCIA CORRECTA' && ls -la '$RELEASE_DIR/source'"
+'@ | Set-Content -Encoding utf8 .github\workflows\deploy.yml
