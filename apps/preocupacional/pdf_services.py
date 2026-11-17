@@ -612,10 +612,15 @@ def generar_pdf_informe_preocupacional(preocupacional, examen_fisico=None):
 
     # B. Fam
     elements.append(Paragraph("<b>B. ANTECEDENTES FAMILIARES (PADRE - MADRE)</b>", ParagraphStyle('H', parent=bold_style, textColor=colors.HexColor('#1f497d'))))
+    hta_label = f"Hipertensión Arterial: {getattr(preocupacional, 'fam_hipertension_valor', '') or ''}".strip()
+    otras_label = f"Otras: {getattr(preocupacional, 'fam_otras_cuales', '') or ''}".strip()
     elements.append(Table([
-        ["SI", "NO", Paragraph("Hipertensión Arterial:", normal_style), "SI", "NO", Paragraph("Diabetes:", normal_style)],
-        ["SI", "NO", Paragraph("Neurológicas:", normal_style), "SI", "NO", Paragraph("Neoplasias:", normal_style)],
-        ["", "", Paragraph("Otras:", normal_style), "", "", ""]
+        ["SI", "NO", "", "SI", "NO", ""],
+        ["X" if preocupacional.fam_hipertension else "", "X" if not preocupacional.fam_hipertension else "", Paragraph(hta_label, normal_style),
+         "X" if preocupacional.fam_diabetes else "", "X" if not preocupacional.fam_diabetes else "", Paragraph("Diabetes:", normal_style)],
+        ["X" if preocupacional.fam_neurologicas else "", "X" if not preocupacional.fam_neurologicas else "", Paragraph("Neurológicas:", normal_style),
+         "X" if preocupacional.fam_neoplasias else "", "X" if not preocupacional.fam_neoplasias else "", Paragraph("Neoplasias:", normal_style)],
+        ["X" if preocupacional.fam_otras else "", "X" if not preocupacional.fam_otras else "", Paragraph(otras_label, normal_style), "", "", ""]
     ], colWidths=[20, 20, 200, 20, 20, 200], style=t_style))
     elements.append(Spacer(1, 10))
     
@@ -629,6 +634,13 @@ def generar_pdf_informe_preocupacional(preocupacional, examen_fisico=None):
     
     # D. Médicos (solo un fragmento para no extender tanto, similar a P4)
     elements.append(Paragraph("<b>D. ANTECEDENTES MÉDICOS</b>", ParagraphStyle('H', parent=bold_style, textColor=colors.HexColor('#1f497d'))))
+    presion_txt = f"Presión alta: {getattr(preocupacional, 'med_presion_alta_valor', '') or ''}".strip()
+    cirugias_txt = f"Cirugías: {getattr(preocupacional, 'med_cirugias_cuales', '') or ''}".strip()
+    elements.append(Table([
+        ["SI", "NO", "", "SI", "NO", ""],
+        ["X" if preocupacional.med_presion_alta else "", "X" if not preocupacional.med_presion_alta else "", Paragraph(presion_txt, normal_style),
+         "X" if preocupacional.med_cirugias else "", "X" if not preocupacional.med_cirugias else "", Paragraph(cirugias_txt, normal_style)],
+    ], colWidths=[20, 20, 200, 20, 20, 200], style=t_style))
     elements.append(PageBreak())
     
     # ==== PÁGINA 5: RESTO DE ANTECEDENTES ====

@@ -317,10 +317,18 @@
             <span>👨‍👩‍👧</span>
             <h3>B. Antecedentes Familiares (Padre - Madre)</h3>
         </div>
-        {% for field in fam_fields %}
+        {% for field, text_field, placeholder in fam_items %}
         <div class="q-item">
             <span class="q-label">{{ field.label }}</span>
-            <div class="toggle-group" data-field="{{ field.html_name }}">
+            {% if text_field %}
+            <div class="q-detail">
+                <input type="text" name="{{ text_field.html_name }}" id="id_{{ text_field.html_name }}"
+                       value="{{ text_field.value|default:'' }}"
+                       placeholder="{{ placeholder }}"
+                       {% if not field.value %}style="display:none"{% endif %}>
+            </div>
+            {% endif %}
+            <div class="toggle-group" data-field="{{ field.html_name }}"{% if text_field %} data-reveal="{{ text_field.html_name }}"{% endif %}>
                 <button type="button" class="toggle-btn" data-val="true"
                         onclick="toggleBool('{{ field.html_name }}', true, this)">Sí</button>
                 <button type="button" class="toggle-btn" data-val="false"
@@ -390,10 +398,18 @@
 
             <!-- COLUMNA DERECHA -->
             <div class="med-col">
-                {% for field in med_derecha %}
+                {% for field, text_field, placeholder in med_derecha_items %}
                 <div class="q-item">
                     <span class="q-label">{{ field.label }}</span>
-                    <div class="toggle-group" data-field="{{ field.html_name }}">
+                    {% if text_field %}
+                    <div class="q-detail" style="flex: 0 0 170px;">
+                        <input type="text" name="{{ text_field.html_name }}" id="id_{{ text_field.html_name }}"
+                               value="{{ text_field.value|default:'' }}"
+                               placeholder="{{ placeholder }}"
+                               {% if not field.value %}style="display:none"{% endif %}>
+                    </div>
+                    {% endif %}
+                    <div class="toggle-group" data-field="{{ field.html_name }}"{% if text_field %} data-reveal="{{ text_field.html_name }}"{% endif %}>
                         <button type="button" class="toggle-btn" data-val="true"
                                 onclick="toggleBool('{{ field.html_name }}', true, this)">Sí</button>
                         <button type="button" class="toggle-btn" data-val="false"

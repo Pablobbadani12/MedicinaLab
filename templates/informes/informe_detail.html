@@ -84,8 +84,14 @@
                     <span class="info-value">{{ informe.fecha_actualizacion|date:"d/m/Y H:i" }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Archivo PDF Oficial</span>
-                    {% if informe.archivo_pdf %}
+                    <span class="info-label">Archivos PDF / Adjuntos Oficiales</span>
+                    {% if informe.archivos_adjuntos %}
+                    <div style="display:flex; flex-direction:column; gap:0.4rem; align-items:flex-start;">
+                        {% for adj in informe.archivos_adjuntos %}
+                        <a href="{{ adj.url }}" class="btn-pdf-download" target="_blank">📄 {{ adj.name }}</a>
+                        {% endfor %}
+                    </div>
+                    {% elif informe.archivo_pdf %}
                     <a href="{{ informe.archivo_pdf.url }}" class="btn-pdf-download" target="_blank">📄 Ver Archivo Adjunto</a>
                     {% else %}
                     <span class="info-value text-muted">Ningún PDF adjunto</span>

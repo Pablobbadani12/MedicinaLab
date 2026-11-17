@@ -110,8 +110,10 @@ CREATE TABLE ml_preocupacional (
     alcohol_cuanto              VARCHAR2(100) DEFAULT '' NOT NULL,
     -- Antecedentes familiares
     fam_hipertension            NUMBER(1,0)   DEFAULT 0 NOT NULL,
+    fam_hipertension_valor      VARCHAR2(200) DEFAULT '' NOT NULL,
     fam_neurologicas            NUMBER(1,0)   DEFAULT 0 NOT NULL,
     fam_otras                   NUMBER(1,0)   DEFAULT 0 NOT NULL,
+    fam_otras_cuales            VARCHAR2(300) DEFAULT '' NOT NULL,
     fam_diabetes                NUMBER(1,0)   DEFAULT 0 NOT NULL,
     fam_neoplasias              NUMBER(1,0)   DEFAULT 0 NOT NULL,
     -- Antecedentes personales/laborales
@@ -169,10 +171,12 @@ CREATE TABLE ml_preocupacional (
     med_perdida_peso            NUMBER(1,0)   DEFAULT 0 NOT NULL,
     med_falta_aire              NUMBER(1,0)   DEFAULT 0 NOT NULL,
     med_presion_alta            NUMBER(1,0)   DEFAULT 0 NOT NULL,
+    med_presion_alta_valor      VARCHAR2(200) DEFAULT '' NOT NULL,
     med_fracturas               NUMBER(1,0)   DEFAULT 0 NOT NULL,
     med_dolor_rodilla           NUMBER(1,0)   DEFAULT 0 NOT NULL,
     med_dolor_hombro            NUMBER(1,0)   DEFAULT 0 NOT NULL,
     med_cirugias                NUMBER(1,0)   DEFAULT 0 NOT NULL,
+    med_cirugias_cuales         VARCHAR2(300) DEFAULT '' NOT NULL,
     -- Datos del puesto
     tarea_propuesta             VARCHAR2(300) DEFAULT '' NOT NULL,
     observaciones               CLOB          DEFAULT '' NOT NULL,

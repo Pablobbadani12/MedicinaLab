@@ -1,6 +1,32 @@
 from django import forms
+from django.core.validators import FileExtensionValidator
 from .models import Informe, Profesional
 from apps.pacientes.models import Paciente
+
+
+class MultipleFileInput(forms.FileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault(
+            'widget',
+            MultipleFileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+                'multiple': True,
+            }),
+        )
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            return [single_file_clean(d, initial) for d in data if d]
+        elif data:
+            return [single_file_clean(data, initial)]
+        return []
 
 
 class InformeForm(forms.ModelForm):
@@ -9,7 +35,7 @@ class InformeForm(forms.ModelForm):
         required=False,
         widget=forms.HiddenInput(attrs={'id': 'id_paciente_id_oracle'}),
     )
-    
+
     tipo_informe = forms.ChoiceField(
         choices=[('manual', '✏️ Ingreso Manual (Texto)'), ('adjunto', '📎 Documento Adjunto (PDF/Imagen)')],
         widget=forms.RadioSelect(attrs={'class': 'tipo-informe-radio'}),
@@ -17,14 +43,19 @@ class InformeForm(forms.ModelForm):
         label='Método de carga del informe'
     )
 
+    archivo_pdf = MultipleFileField(
+        required=False,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
+        label='Documentos Clínicos Respaldatorios (PDF / Imagen)',
+    )
+
     class Meta:
         model = Informe
-        fields = ['profesional', 'empresa', 'tipo_informe', 'texto_informe', 'archivo_pdf', 'estado']
+        fields = ['profesional', 'empresa', 'tipo_informe', 'texto_informe', 'estado']
         widgets = {
             'profesional':   forms.Select(attrs={'class': 'form-control'}),
             'empresa':       forms.Select(attrs={'class': 'form-control'}),
             'texto_informe': forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'maxlength': 1024}),
-            'archivo_pdf':   forms.FileInput(attrs={'class': 'form-control', 'accept': '.pdf,.jpg,.jpeg,.png'}),
             'estado':        forms.Select(attrs={'class': 'form-control'}),
         }
 
@@ -50,9 +81,9 @@ class InformeForm(forms.ModelForm):
         if self.instance and self.instance.pk and self.instance.paciente_id:
             self.fields['paciente_id'].initial = self.instance.paciente_id
 
-        # Configurar el radio button inicial basado en si ya tiene archivo_pdf
+        # Configurar el radio button inicial basado en si ya tiene archivos adjuntos
         if self.instance and self.instance.pk:
-            if self.instance.archivo_pdf:
+            if self.instance.tiene_archivos_adjuntos or self.instance.archivo_pdf:
                 self.fields['tipo_informe'].initial = 'adjunto'
             else:
                 self.fields['tipo_informe'].initial = 'manual'
@@ -65,21 +96,25 @@ class InformeForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        
-        # Validar tipo de informe y campos relacionados
+
         tipo_informe = cleaned.get('tipo_informe')
+        nuevos_archivos = cleaned.get('archivo_pdf') or []
+        eliminar_keys = set(self.data.getlist('eliminar_adjuntos'))
+
+        adjuntos_actuales = []
+        if self.instance and self.instance.pk:
+            adjuntos_actuales = [
+                a for a in self.instance.archivos_adjuntos
+                if a['key'] not in eliminar_keys
+            ]
+
         if tipo_informe == 'manual':
             if not cleaned.get('texto_informe'):
                 self.add_error('texto_informe', 'El texto del informe es obligatorio cuando elige ingreso manual.')
-            # Si quiere borrar el adjunto, en Django ModelForms, si el FileInput no pasa nada, se mantiene el actual.
-            # No podemos borrarlo forzosamente sin más código (o con clear_checkbox), 
-            # pero el usuario dijo que el sistema de impresión ya los distingue.
         elif tipo_informe == 'adjunto':
-            # Vaciamos el texto si elige adjunto
             cleaned['texto_informe'] = ''
-            # Para vaciar en la instancia real al guardar, necesitamos sobreescribir cleaned_data
-            if not cleaned.get('archivo_pdf') and not (self.instance and self.instance.archivo_pdf):
-                self.add_error('archivo_pdf', 'Debe adjuntar un archivo cuando selecciona esta opción.')
+            if not nuevos_archivos and not adjuntos_actuales:
+                self.add_error('archivo_pdf', 'Debe adjuntar al menos un archivo cuando selecciona esta opción.')
 
         pid = cleaned.get('paciente_id') or self.data.get('paciente_id_oracle')
         if pid:
@@ -99,4 +134,10 @@ class InformeForm(forms.ModelForm):
             informe.turno = self._turno
         if commit:
             informe.save()
+            eliminar_keys = self.data.getlist('eliminar_adjuntos')
+            if eliminar_keys:
+                informe.eliminar_archivos_adjuntos(eliminar_keys)
+            nuevos_archivos = self.cleaned_data.get('archivo_pdf') or []
+            if nuevos_archivos:
+                informe.agregar_archivos_adjuntos(nuevos_archivos)
         return informe

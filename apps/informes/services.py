@@ -114,8 +114,12 @@ def generar_pdf_informe(informe):
     buffer.seek(0)
     informe_pdf_bytes = buffer.getvalue()
 
-    # ── Combinar con PDF adjunto si existe ───────────────────────────────────
-    if informe.archivo_pdf and os.path.exists(informe.archivo_pdf.path):
+    # ── Combinar con PDF(s) adjunto(s) si existen ────────────────────────────
+    adjuntos = [
+        a for a in getattr(informe, 'archivos_adjuntos', [])
+        if a.get('path') and os.path.exists(a['path'])
+    ]
+    if adjuntos:
         writer = PdfWriter()
 
         # Páginas del informe generado
@@ -123,36 +127,38 @@ def generar_pdf_informe(informe):
         for page in reader_informe.pages:
             writer.add_page(page)
 
-        ext = os.path.splitext(informe.archivo_pdf.path)[1].lower()
-        try:
-            if ext in ('.jpg', '.jpeg', '.png'):
-                from PIL import Image as PilImage
-                from reportlab.lib.pagesizes import letter as letter_size
+        for adj in adjuntos:
+            adj_path = adj['path']
+            ext = os.path.splitext(adj_path)[1].lower()
+            try:
+                if ext in ('.jpg', '.jpeg', '.png'):
+                    from PIL import Image as PilImage
+                    from reportlab.lib.pagesizes import letter as letter_size
 
-                img = PilImage.open(informe.archivo_pdf.path).convert('RGB')
-                img_width, img_height = img.size
-                page_w, page_h = letter_size
+                    img = PilImage.open(adj_path).convert('RGB')
+                    img_width, img_height = img.size
+                    page_w, page_h = letter_size
 
-                scale = min(page_w / img_width, page_h / img_height)
-                draw_w = img_width * scale
-                draw_h = img_height * scale
-                x_off = (page_w - draw_w) / 2
-                y_off = (page_h - draw_h) / 2
+                    scale = min(page_w / img_width, page_h / img_height)
+                    draw_w = img_width * scale
+                    draw_h = img_height * scale
+                    x_off = (page_w - draw_w) / 2
+                    y_off = (page_h - draw_h) / 2
 
-                img_buffer = BytesIO()
-                img_c = canvas.Canvas(img_buffer, pagesize=letter_size)
-                img_c.drawInlineImage(img, x_off, y_off, draw_w, draw_h)
-                img_c.save()
-                img_buffer.seek(0)
+                    img_buffer = BytesIO()
+                    img_c = canvas.Canvas(img_buffer, pagesize=letter_size)
+                    img_c.drawInlineImage(img, x_off, y_off, draw_w, draw_h)
+                    img_c.save()
+                    img_buffer.seek(0)
 
-                reader_adjunto = PdfReader(img_buffer)
-            else:
-                reader_adjunto = PdfReader(informe.archivo_pdf.path)
+                    reader_adjunto = PdfReader(img_buffer)
+                else:
+                    reader_adjunto = PdfReader(adj_path)
 
-            for page in reader_adjunto.pages:
-                writer.add_page(page)
-        except Exception:
-            pass 
+                for page in reader_adjunto.pages:
+                    writer.add_page(page)
+            except Exception:
+                pass
 
         out = BytesIO()
         writer.write(out)

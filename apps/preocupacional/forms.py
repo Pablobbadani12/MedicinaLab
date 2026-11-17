@@ -17,10 +17,14 @@ class PreocupacionalForm(forms.ModelForm):
             # Campos de texto libre para hábitos y antecedentes
             'fuma_cuantos':             forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'cantidad/día'}),
             'alcohol_cuanto':           forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'cantidad/día'}),
+            'fam_hipertension_valor':   forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Valoración...'}),
+            'fam_otras_cuales':         forms.TextInput(attrs={'class': 'form-control', 'placeholder': '¿Cuáles?...'}),
             'pers_abandono_causas':     forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Causas...'}),
             'pers_indemnizacion_causas':forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Causas...'}),
             'pers_negado_causas':       forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Causas...'}),
             'pers_alergias_cuales':     forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Cuáles...'}),
+            'med_presion_alta_valor':   forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Valor...'}),
+            'med_cirugias_cuales':      forms.TextInput(attrs={'class': 'form-control', 'placeholder': '¿Cuáles cirugías?...'}),
         }
 
     def __init__(self, *args, paciente=None, **kwargs):

@@ -422,8 +422,40 @@
 
         <div class="form-row">
             <div class="form-group col-md-6" id="grupo_adjunto" style="display:none;">
-                <label for="id_archivo_pdf">Documento Clínico Respaldatorio (PDF) <span class="required">*</span></label>
-                {{ form.archivo_pdf }}
+                <label for="id_archivo_pdf">Documentos Clínicos Respaldatorios (PDF / Imagen) <span class="required">*</span></label>
+
+                {% if form.instance.pk and form.instance.archivos_adjuntos %}
+                <div class="adjuntos-existentes" style="margin-bottom:0.85rem; padding:0.75rem; border-radius:10px; background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.2);">
+                    <div style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
+                        📎 Archivos cargados ({{ form.instance.archivos_adjuntos|length }})
+                    </div>
+                    {% for adj in form.instance.archivos_adjuntos %}
+                    <div class="adjunto-item" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; padding:0.4rem 0.6rem; margin-bottom:0.35rem; border-radius:7px; background:rgba(255,255,255,0.65); border:1px solid rgba(148,163,184,0.25);">
+                        <a href="{{ adj.url }}" target="_blank" style="font-size:0.88rem; font-weight:600; color:#4f46e5; text-decoration:none; word-break:break-all;">
+                            📄 {{ adj.name }}
+                        </a>
+                        <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.78rem; color:#ef4444; cursor:pointer; white-space:nowrap; margin:0;">
+                            <input type="checkbox" name="eliminar_adjuntos" value="{{ adj.key }}">
+                            Quitar
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div id="file-inputs-container" style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <div class="file-input-row" style="display:flex; align-items:center; gap:0.5rem;">
+                        {{ form.archivo_pdf }}
+                    </div>
+                </div>
+
+                <div style="margin-top:0.55rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                    <button type="button" id="btn-add-pdf-input" style="padding:0.4rem 0.85rem; border-radius:7px; border:1px dashed #6366f1; background:rgba(99,102,241,0.08); color:#4f46e5; font-size:0.84rem; font-weight:600; cursor:pointer;">
+                        ➕ Agregar otro PDF / archivo
+                    </button>
+                    <small style="color:#64748b; font-size:0.78rem;">Podés seleccionar varios archivos a la vez o agregar más filas.</small>
+                </div>
+
                 {% if form.archivo_pdf.errors %}
                 <div class="field-error">{{ form.archivo_pdf.errors }}</div>
                 {% endif %}
@@ -628,6 +660,35 @@
 
   tipoRadios.forEach(radio => radio.addEventListener('change', toggleCampos));
   if (tipoRadios.length > 0) { toggleCampos(); }
+
+  // ── Agregar múltiples selectores de archivos PDF ──
+  const btnAddPdf = document.getElementById('btn-add-pdf-input');
+  const fileInputsContainer = document.getElementById('file-inputs-container');
+  if (btnAddPdf && fileInputsContainer) {
+    btnAddPdf.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'file-input-row';
+      row.style.cssText = 'display:flex; align-items:center; gap:0.5rem;';
+
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.name = 'archivo_pdf';
+      input.className = 'form-control';
+      input.accept = '.pdf,.jpg,.jpeg,.png';
+      input.multiple = true;
+
+      const btnRemove = document.createElement('button');
+      btnRemove.type = 'button';
+      btnRemove.title = 'Quitar esta fila';
+      btnRemove.textContent = '✕';
+      btnRemove.style.cssText = 'padding:0.45rem 0.7rem; border-radius:7px; border:1px solid rgba(239,68,68,0.35); background:rgba(239,68,68,0.1); color:#ef4444; font-weight:700; cursor:pointer;';
+      btnRemove.addEventListener('click', () => row.remove());
+
+      row.appendChild(input);
+      row.appendChild(btnRemove);
+      fileInputsContainer.appendChild(row);
+    });
+  }
 
 })();
 </script>

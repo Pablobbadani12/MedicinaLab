@@ -23,6 +23,15 @@ FAM_FIELDS = [
     'fam_diabetes', 'fam_neoplasias',
 ]
 
+FAM_ITEMS = [
+    # (campo_bool, campo_texto_detalle_opcional, placeholder)
+    ('fam_hipertension', 'fam_hipertension_valor', 'Valoración...'),
+    ('fam_neurologicas', None, ''),
+    ('fam_otras',        'fam_otras_cuales',       '¿Cuáles?...'),
+    ('fam_diabetes',     None, ''),
+    ('fam_neoplasias',   None, ''),
+]
+
 PERS_ITEMS = [
     # (campo_bool, campo_texto_detalle)
     ('pers_abandono_empleo',  'pers_abandono_causas'),
@@ -50,20 +59,39 @@ MED_DERECHA = [
     'med_fracturas', 'med_dolor_rodilla', 'med_dolor_hombro', 'med_cirugias',
 ]
 
+MED_DERECHA_DETALLES = {
+    'med_presion_alta': ('med_presion_alta_valor', 'Valor (ej: 140/90)...'),
+    'med_cirugias':     ('med_cirugias_cuales',    '¿Cuáles cirugías?...'),
+}
+
 
 def _form_context(form):
     """Devuelve el contexto con campos agrupados para el template."""
+    fam_items_ctx = [
+        (form[bool_f], form[text_f] if text_f else None, placeholder)
+        for bool_f, text_f, placeholder in FAM_ITEMS
+    ]
     pers_items_ctx = [
         (form[bool_f], form[text_f]) for bool_f, text_f in PERS_ITEMS
     ]
+    med_derecha_items_ctx = []
+    for f in MED_DERECHA:
+        if f in MED_DERECHA_DETALLES:
+            det_f, placeholder = MED_DERECHA_DETALLES[f]
+            med_derecha_items_ctx.append((form[f], form[det_f], placeholder))
+        else:
+            med_derecha_items_ctx.append((form[f], None, ''))
+
     return {
-        'habitos_bool':  [form[f] for f in HABITOS_BOOL],
-        'fuma_cuantos':  form['fuma_cuantos'],
-        'alcohol_cuanto': form['alcohol_cuanto'],
-        'fam_fields':    [form[f] for f in FAM_FIELDS],
-        'pers_items':    pers_items_ctx,
-        'med_izquierda': [form[f] for f in MED_IZQUIERDA],
-        'med_derecha':   [form[f] for f in MED_DERECHA],
+        'habitos_bool':      [form[f] for f in HABITOS_BOOL],
+        'fuma_cuantos':      form['fuma_cuantos'],
+        'alcohol_cuanto':    form['alcohol_cuanto'],
+        'fam_fields':        [form[f] for f in FAM_FIELDS],
+        'fam_items':         fam_items_ctx,
+        'pers_items':        pers_items_ctx,
+        'med_izquierda':     [form[f] for f in MED_IZQUIERDA],
+        'med_derecha':       [form[f] for f in MED_DERECHA],
+        'med_derecha_items': med_derecha_items_ctx,
     }
 
 

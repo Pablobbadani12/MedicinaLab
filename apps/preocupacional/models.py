@@ -48,11 +48,13 @@ class Preocupacional(models.Model):
     # ═══════════════════════════════════════════════════════════
     # B. ANTECEDENTES FAMILIARES (Padre - Madre)
     # ═══════════════════════════════════════════════════════════
-    fam_hipertension    = models.BooleanField(default=False, verbose_name='Hipertensión Arterial')
-    fam_neurologicas    = models.BooleanField(default=False, verbose_name='Neurológicas')
-    fam_otras           = models.BooleanField(default=False, verbose_name='Otras')
-    fam_diabetes        = models.BooleanField(default=False, verbose_name='Diabetes')
-    fam_neoplasias      = models.BooleanField(default=False, verbose_name='Neoplasias')
+    fam_hipertension        = models.BooleanField(default=False, verbose_name='Hipertensión Arterial')
+    fam_hipertension_valor  = models.CharField(max_length=200, blank=True, default='', verbose_name='Valoración Hipertensión Arterial')
+    fam_neurologicas        = models.BooleanField(default=False, verbose_name='Neurológicas')
+    fam_otras               = models.BooleanField(default=False, verbose_name='Otras')
+    fam_otras_cuales        = models.CharField(max_length=300, blank=True, default='', verbose_name='Cuáles otras')
+    fam_diabetes            = models.BooleanField(default=False, verbose_name='Diabetes')
+    fam_neoplasias          = models.BooleanField(default=False, verbose_name='Neoplasias')
 
     # ═══════════════════════════════════════════════════════════
     # C. ANTECEDENTES PERSONALES
@@ -116,10 +118,12 @@ class Preocupacional(models.Model):
     med_perdida_peso        = models.BooleanField(default=False, verbose_name='Pérdida de peso reciente')
     med_falta_aire          = models.BooleanField(default=False, verbose_name='Falta de aire')
     med_presion_alta        = models.BooleanField(default=False, verbose_name='Presión alta')
+    med_presion_alta_valor  = models.CharField(max_length=200, blank=True, default='', verbose_name='Valor Presión alta')
     med_fracturas           = models.BooleanField(default=False, verbose_name='Fracturas o luxaciones')
     med_dolor_rodilla       = models.BooleanField(default=False, verbose_name='Dolores de rodilla')
     med_dolor_hombro        = models.BooleanField(default=False, verbose_name='Dolor de hombro')
     med_cirugias            = models.BooleanField(default=False, verbose_name='Cirugías')
+    med_cirugias_cuales     = models.CharField(max_length=300, blank=True, default='', verbose_name='Cuáles cirugías')
 
     # ═══════════════════════════════════════════════════════════
     # OBSERVACIONES GENERALES

@@ -1,7 +1,11 @@
+import os
+from urllib.parse import quote
 from django.db import models
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.core.validators import FileExtensionValidator, MaxLengthValidator
 from django.core.exceptions import ValidationError
+from django.utils.text import get_valid_filename
 
 
 class Especialidad(models.Model):
@@ -97,6 +101,148 @@ class Informe(models.Model):
     def __str__(self):
         paciente_str = str(self.paciente) if self.paciente else '(sin paciente)'
         return f"Informe {self.id} - {paciente_str}"
+
+    # ── Gestión de múltiples archivos adjuntos (PDF / Imágenes) ──────────────
+    def _extra_adjuntos_dir(self):
+        if not self.pk:
+            return None
+        return os.path.join(settings.MEDIA_ROOT, 'informes_pdf', 'extra', str(self.pk))
+
+    @staticmethod
+    def _clean_display_name(filename):
+        base = os.path.basename(filename)
+        if '__' in base and base.split('__', 1)[0].isdigit():
+            return base.split('__', 1)[1]
+        return base
+
+    @property
+    def archivos_adjuntos(self):
+        """
+        Retorna la lista ordenada de todos los archivos adjuntos del informe:
+        [{'key': ..., 'name': ..., 'url': ..., 'path': ...}, ...]
+        """
+        items = []
+        main_abspath = None
+        if self.archivo_pdf and self.archivo_pdf.name:
+            try:
+                main_path = self.archivo_pdf.path
+                main_abspath = os.path.abspath(main_path)
+                if os.path.exists(main_path):
+                    items.append({
+                        'key': 'main',
+                        'name': self._clean_display_name(self.archivo_pdf.name),
+                        'url': self.archivo_pdf.url,
+                        'path': main_path,
+                    })
+            except Exception:
+                pass
+
+        extra_dir = self._extra_adjuntos_dir()
+        if extra_dir and os.path.isdir(extra_dir):
+            for fname in sorted(os.listdir(extra_dir)):
+                fpath = os.path.join(extra_dir, fname)
+                if not os.path.isfile(fpath):
+                    continue
+                if main_abspath and os.path.abspath(fpath) == main_abspath:
+                    continue
+                rel_url = f"{settings.MEDIA_URL.rstrip('/')}/informes_pdf/extra/{self.pk}/{quote(fname)}"
+                items.append({
+                    'key': f"extra:{fname}",
+                    'name': self._clean_display_name(fname),
+                    'url': rel_url,
+                    'path': fpath,
+                })
+        return items
+
+    @property
+    def tiene_archivos_adjuntos(self):
+        return len(self.archivos_adjuntos) > 0
+
+    def eliminar_archivos_adjuntos(self, keys_to_delete):
+        """Elimina los adjuntos indicados por su 'key' y reasigna archivo_pdf si corresponde."""
+        if not keys_to_delete or not self.pk:
+            return
+        keys_set = set(keys_to_delete)
+        extra_dir = self._extra_adjuntos_dir()
+
+        # 1. Eliminar archivos extra seleccionados
+        if extra_dir and os.path.isdir(extra_dir):
+            for key in keys_set:
+                if key.startswith('extra:'):
+                    fname = os.path.basename(key.split(':', 1)[1])
+                    fpath = os.path.join(extra_dir, fname)
+                    if os.path.isfile(fpath):
+                        try:
+                            os.remove(fpath)
+                        except OSError:
+                            pass
+
+        # 2. Si se pidió eliminar el archivo principal ('main')
+        if 'main' in keys_set and self.archivo_pdf and self.archivo_pdf.name:
+            try:
+                old_path = self.archivo_pdf.path
+                if os.path.isfile(old_path):
+                    os.remove(old_path)
+            except Exception:
+                pass
+
+            # Promover el siguiente archivo extra (si queda alguno) como archivo_pdf principal
+            promoted = False
+            if extra_dir and os.path.isdir(extra_dir):
+                remaining = [
+                    f for f in sorted(os.listdir(extra_dir))
+                    if os.path.isfile(os.path.join(extra_dir, f))
+                ]
+                if remaining:
+                    next_fname = remaining[0]
+                    self.archivo_pdf.name = f"informes_pdf/extra/{self.pk}/{next_fname}"
+                    Informe.objects.filter(pk=self.pk).update(archivo_pdf=self.archivo_pdf.name)
+                    promoted = True
+
+            if not promoted:
+                self.archivo_pdf = None
+                Informe.objects.filter(pk=self.pk).update(archivo_pdf='')
+
+    def agregar_archivos_adjuntos(self, uploaded_files):
+        """
+        Guarda uno o más archivos adjuntos en el informe.
+        Si no tiene archivo_pdf principal aún, el primero se guarda en archivo_pdf
+        y los siguientes en media/informes_pdf/extra/<id>/.
+        """
+        if not uploaded_files or not self.pk:
+            return
+
+        files_list = list(uploaded_files)
+        # Verificar si ya existe un archivo principal válido en disco
+        has_main = False
+        if self.archivo_pdf and self.archivo_pdf.name:
+            try:
+                has_main = os.path.isfile(self.archivo_pdf.path)
+            except Exception:
+                has_main = False
+
+        if not has_main and files_list:
+            first_file = files_list.pop(0)
+            self.archivo_pdf.save(first_file.name, first_file, save=False)
+            Informe.objects.filter(pk=self.pk).update(archivo_pdf=self.archivo_pdf.name)
+
+        if files_list:
+            extra_dir = self._extra_adjuntos_dir()
+            os.makedirs(extra_dir, exist_ok=True)
+            existing_indices = []
+            for fname in os.listdir(extra_dir):
+                if '__' in fname and fname.split('__', 1)[0].isdigit():
+                    existing_indices.append(int(fname.split('__', 1)[0]))
+            next_idx = (max(existing_indices) + 1) if existing_indices else 1
+
+            for f in files_list:
+                safe_name = get_valid_filename(os.path.basename(f.name)) or 'adjunto.pdf'
+                stored_name = f"{next_idx:03d}__{safe_name}"
+                next_idx += 1
+                dest_path = os.path.join(extra_dir, stored_name)
+                with open(dest_path, 'wb+') as dest:
+                    for chunk in f.chunks():
+                        dest.write(chunk)
 
 
 class PerfilProfesional(models.Model):
