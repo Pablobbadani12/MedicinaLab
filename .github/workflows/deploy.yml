@@ -1,6 +1,9 @@
 ﻿name: Publicar MedicinaLab en OCI
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -38,13 +41,26 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
           ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null
 
-      - name: Transferir codigo a OCI
+      - name: Transferir y desplegar codigo en OCI
         env:
           OCI_HOST: ${{ secrets.OCI_HOST }}
           OCI_USER: ${{ secrets.OCI_USER }}
         run: |
           RELEASE_DIR="/u03/deploy/MedicinaLab/incoming/${GITHUB_RUN_ID}"
+          APP_DIR="/u03/tomcat/MedicinaLab"
           ssh "$OCI_USER@$OCI_HOST" "mkdir -p '$RELEASE_DIR'"
           scp release.tar.gz "$OCI_USER@$OCI_HOST:$RELEASE_DIR/"
-          ssh "$OCI_USER@$OCI_HOST" \
-            "mkdir -p '$RELEASE_DIR/source' && tar -xzf '$RELEASE_DIR/release.tar.gz' -C '$RELEASE_DIR/source' && echo 'TRANSFERENCIA CORRECTA' && ls -la '$RELEASE_DIR/source'"
+          ssh "$OCI_USER@$OCI_HOST" "
+            set -e
+            mkdir -p '$RELEASE_DIR/source'
+            tar -xzf '$RELEASE_DIR/release.tar.gz' -C '$RELEASE_DIR/source'
+            rsync -avI --exclude='.env' --exclude='media' --exclude='.venv' --exclude='venv' --exclude='db.sqlite3' '$RELEASE_DIR/source/' '$APP_DIR/'
+            cd '$APP_DIR'
+            /u03/tomcat/MedicinaLab/.venv/bin/python3.9 manage.py collectstatic --noinput
+            pkill -f 'manage.py runserver 0.0.0.0:8002' || true
+            sleep 1
+            nohup /u03/tomcat/MedicinaLab/.venv/bin/python3.9 manage.py runserver 0.0.0.0:8002 </dev/null > django.log 2>&1 &
+            sleep 2
+            ps -ef | grep '8002' | grep -v grep
+            echo 'DESPLIEGUE COMPLETADO EN OCI'
+          "
